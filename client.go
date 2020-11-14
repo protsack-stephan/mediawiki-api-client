@@ -9,6 +9,18 @@ import (
 	"strconv"
 )
 
+// NewClient create new client instance
+func NewClient(url string) *Client {
+	return &Client{
+		url:        url,
+		httpClient: new(http.Client),
+		options: &Options{
+			PageMetaURL: pageMetaURL,
+			PageHTMLURL: pageHTMLURL,
+		},
+	}
+}
+
 // Client wikimedia api client
 type Client struct {
 	url        string

@@ -5,35 +5,37 @@ import (
 	"time"
 )
 
-// NewClient create new wikimedia api client
-func NewClient(url string) *Client {
-	return &Client{
-		url:        url,
-		httpClient: new(http.Client),
-		options: &Options{
-			PageMetaURL: pageMetaURL,
-			PageHTMLURL: pageHTMLURL,
-		},
-	}
+// NewBuilder create new wikimedia api client
+func NewBuilder(url string) *ClientBuilder {
+	cb := new(ClientBuilder)
+	cb.client = NewClient(url)
+	return cb
 }
 
-type clientBuilder struct {
+// ClientBuilder builder method fo the client
+type ClientBuilder struct {
 	client *Client
 }
 
 // Options update the default options
-func (cb *clientBuilder) Options(options *Options) *clientBuilder {
+func (cb *ClientBuilder) Options(options *Options) *ClientBuilder {
 	cb.client.options = options
 	return cb
 }
 
 // HTTPClient pass custom http client
-func (cb *clientBuilder) HTTPClient(httpClient *http.Client) *clientBuilder {
+func (cb *ClientBuilder) HTTPClient(httpClient *http.Client) *ClientBuilder {
 	cb.client.httpClient = httpClient
 	return cb
 }
 
-func (cb *clientBuilder) Timeout(timeout time.Duration) *clientBuilder {
+// Timeout set http client timeout
+func (cb *ClientBuilder) Timeout(timeout time.Duration) *ClientBuilder {
 	cb.client.httpClient.Timeout = timeout
 	return cb
+}
+
+// Build create new client instance
+func (cb *ClientBuilder) Build() *Client {
+	return cb.client
 }
