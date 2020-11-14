@@ -22,4 +22,16 @@ func main() {
 	}
 
 	fmt.Println(meta)
+
+	html, status, err := client.PageHTML(context.Background(), "Pet_door", meta.Rev)
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	if status != http.StatusOK {
+		log.Panic("bad request")
+	}
+
+	fmt.Println(string(html))
 }

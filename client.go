@@ -6,36 +6,14 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 )
-
-// NewClient create new wikimedia api client
-func NewClient(url string) *Client {
-	return &Client{
-		url:        url,
-		httpClient: new(http.Client),
-		options: &Options{
-			PageMetaURL: pageMetaURL,
-		},
-	}
-}
 
 // Client wikimedia api client
 type Client struct {
 	url        string
 	httpClient *http.Client
 	options    *Options
-}
-
-// Options update the default options
-func (cl *Client) Options(options *Options) *Client {
-	cl.options = options
-	return cl
-}
-
-// HTTPClient pass custom http client
-func (cl *Client) HTTPClient(httpClient *http.Client) *Client {
-	cl.httpClient = httpClient
-	return cl
 }
 
 // PageMeta get page meta data
@@ -58,4 +36,15 @@ func (cl *Client) PageMeta(ctx context.Context, title string) (*PageMeta, int, e
 	}
 
 	return &meta.Items[0], status, nil
+}
+
+// PageHTML get page html with revision
+func (cl *Client) PageHTML(ctx context.Context, title string, rev ...int) ([]byte, int, error) {
+	url := cl.url + cl.options.PageHTMLURL + url.QueryEscape(title)
+
+	if len(rev) > 0 {
+		url += "/" + strconv.Itoa(rev[0])
+	}
+
+	return req(ctx, cl.httpClient, http.MethodGet, url, nil)
 }
