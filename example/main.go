@@ -23,7 +23,7 @@ func main() {
 
 	fmt.Println(meta)
 
-	html, status, err := client.PageHTML(context.Background(), "Pet_door", meta.Rev)
+	_, status, err = client.PageHTML(context.Background(), "Pet_door", meta.Rev)
 
 	if err != nil {
 		log.Panic(err)
@@ -33,5 +33,21 @@ func main() {
 		log.Panic("bad request")
 	}
 
-	fmt.Println(string(html))
+	matrix, status, err := client.Sitematrix(context.Background())
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	if status != http.StatusOK {
+		log.Panic("bad request")
+	}
+
+	for _, project := range matrix.Projects {
+		fmt.Println(project)
+	}
+
+	for _, special := range matrix.Specials {
+		fmt.Println(special)
+	}
 }

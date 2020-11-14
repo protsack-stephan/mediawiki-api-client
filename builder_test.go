@@ -11,6 +11,7 @@ func TestBuilder(t *testing.T) {
 	const timeout = time.Second * 2
 	const pageMetaURL = "/meta"
 	const pageHTMLURL = "/html"
+	const sitematrixURL = "/sitematrix"
 
 	builder := NewBuilder(url).
 		HTTPClient(&http.Client{
@@ -21,8 +22,9 @@ func TestBuilder(t *testing.T) {
 		}).
 		Timeout(timeout).
 		Options(&Options{
-			PageMetaURL: pageMetaURL,
-			PageHTMLURL: pageHTMLURL,
+			PageMetaURL:   pageMetaURL,
+			PageHTMLURL:   pageHTMLURL,
+			SitematrixURL: sitematrixURL,
 		})
 
 	client := builder.Build()
@@ -45,6 +47,10 @@ func TestBuilder(t *testing.T) {
 
 	if client.options.PageMetaURL != pageMetaURL {
 		t.Error("options meta url mismatch")
+	}
+
+	if client.options.SitematrixURL != sitematrixURL {
+		t.Error("sitematrix meta url mismatch")
 	}
 
 	if client.httpClient.Timeout != timeout {

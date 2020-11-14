@@ -15,8 +15,9 @@ func NewClient(url string) *Client {
 		url:        url,
 		httpClient: new(http.Client),
 		options: &Options{
-			PageMetaURL: pageMetaURL,
-			PageHTMLURL: pageHTMLURL,
+			PageMetaURL:   pageMetaURL,
+			PageHTMLURL:   pageHTMLURL,
+			SitematrixURL: sitematrixURL,
 		},
 	}
 }
@@ -59,4 +60,33 @@ func (cl *Client) PageHTML(ctx context.Context, title string, rev ...int) ([]byt
 	}
 
 	return req(ctx, cl.httpClient, http.MethodGet, url, nil)
+}
+
+// Sitematrix get all supported wikimedia projects
+func (cl *Client) Sitematrix(ctx context.Context) (*Sitematrix, int, error) {
+	matrix := new(Sitematrix)
+	res, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+cl.options.SitematrixURL, nil)
+
+	if err != nil {
+		return matrix, status, err
+	}
+
+	spRes := new(siteMatrixSpecialResponce)
+	err = json.Unmarshal(res, spRes)
+
+	if err != nil {
+		return matrix, status, err
+	}
+
+	matrix.Count, matrix.Specials = spRes.Sitematrix.Count, spRes.Sitematrix.Specials
+	mRes := new(siteMatrixMainResponse)
+	json.Unmarshal(res, mRes)
+
+	for num, project := range mRes.Sitematrix {
+		if num != "count" && num != "specials" {
+			matrix.Projects = append(matrix.Projects, project)
+		}
+	}
+
+	return matrix, status, nil
 }
