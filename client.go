@@ -30,7 +30,7 @@ type Client struct {
 
 // PageMeta get page meta data
 func (cl *Client) PageMeta(ctx context.Context, title string) (*PageMeta, int, error) {
-	meta := new(PageMetaResponse)
+	meta := new(pageMetaResponse)
 	res, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+cl.options.PageMetaURL+url.QueryEscape(title), nil)
 
 	if err != nil {

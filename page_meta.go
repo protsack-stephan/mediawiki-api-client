@@ -21,7 +21,6 @@ type PageMeta struct {
 	Redirect     bool          `json:"redirect"`
 }
 
-// PageMetaResponse response for page meta data
-type PageMetaResponse struct {
+type pageMetaResponse struct {
 	Items []PageMeta `json:"items"`
 }

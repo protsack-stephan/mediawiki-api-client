@@ -2,7 +2,7 @@ package mediawiki
 
 import (
 	"context"
-	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -29,22 +29,8 @@ func createClientServer() http.Handler {
 	})
 
 	router.HandleFunc(pageMetaURL+metaTestTitle, func(w http.ResponseWriter, r *http.Request) {
-		meta := new(PageMetaResponse)
-		meta.Items = []PageMeta{
-			{
-				Title: metaTestTitle,
-				Rev:   metaTestRevision,
-			},
-		}
-
-		body, err := json.Marshal(meta)
-
-		if err == nil {
-			w.WriteHeader(http.StatusOK)
-			w.Write(body)
-		} else {
-			w.WriteHeader(http.StatusInternalServerError)
-		}
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(fmt.Sprintf(`{"items": [ { "title": "%s", "rev": %d } ]}`, metaTestTitle, metaTestRevision)))
 	})
 
 	return router
