@@ -11,7 +11,8 @@ import (
 
 func main() {
 	client := mediawiki.NewClient("https://en.wikipedia.org/")
-	meta, status, err := client.PageMeta(context.Background(), "Pet_door")
+	ctx := context.Background()
+	meta, status, err := client.PageMeta(ctx, "Pet_door")
 
 	if err != nil {
 		log.Panic(err)
@@ -23,7 +24,7 @@ func main() {
 
 	fmt.Println(meta)
 
-	_, status, err = client.PageHTML(context.Background(), "Pet_door", meta.Rev)
+	_, status, err = client.PageHTML(ctx, "Pet_door", meta.Rev)
 
 	if err != nil {
 		log.Panic(err)
@@ -33,7 +34,7 @@ func main() {
 		log.Panic("bad request")
 	}
 
-	matrix, status, err := client.Sitematrix(context.Background())
+	matrix, status, err := client.Sitematrix(ctx)
 
 	if err != nil {
 		log.Panic(err)
