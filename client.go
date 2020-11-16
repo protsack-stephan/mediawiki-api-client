@@ -15,10 +15,11 @@ func NewClient(url string) *Client {
 		url:        url,
 		httpClient: new(http.Client),
 		options: &Options{
-			PageMetaURL:   pageMetaURL,
-			PageHTMLURL:   pageHTMLURL,
-			SitematrixURL: sitematrixURL,
-			NamespacesURL: namespacesURL,
+			pageMetaURL,
+			pageHTMLURL,
+			revisionsURL,
+			sitematrixURL,
+			namespacesURL,
 		},
 	}
 }
@@ -32,24 +33,25 @@ type Client struct {
 
 // PageMeta get page meta data
 func (cl *Client) PageMeta(ctx context.Context, title string) (*PageMeta, int, error) {
-	meta := new(pageMetaResponse)
+	meta := new(PageMeta)
 	res, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+cl.options.PageMetaURL+url.QueryEscape(title), nil)
 
 	if err != nil {
-		return nil, status, err
+		return meta, status, err
 	}
 
-	err = json.Unmarshal(res, &meta)
+	mRes := new(pageMetaResponse)
+	err = json.Unmarshal(res, mRes)
 
 	if err != nil {
-		return nil, status, err
+		return meta, status, err
 	}
 
-	if meta.Items == nil || len(meta.Items) <= 0 {
-		return nil, status, fmt.Errorf("zero items in result")
+	if mRes.Items == nil || len(mRes.Items) <= 0 {
+		return meta, status, fmt.Errorf("zero items in result")
 	}
 
-	return &meta.Items[0], status, nil
+	return &mRes.Items[0], status, nil
 }
 
 // PageHTML get page html with revision
@@ -61,6 +63,29 @@ func (cl *Client) PageHTML(ctx context.Context, title string, rev ...int) ([]byt
 	}
 
 	return req(ctx, cl.httpClient, http.MethodGet, url, nil)
+}
+
+// PageRevisions get list of page revisions
+func (cl *Client) PageRevisions(ctx context.Context, title string, limit int) ([]Revision, int, error) {
+	revs := []Revision{}
+	res, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+fmt.Sprintf(cl.options.PageRevisionsURL, limit, url.QueryEscape(title)), nil)
+
+	if err != nil {
+		return revs, status, err
+	}
+
+	rRes := new(revisionsResponse)
+	err = json.Unmarshal(res, rRes)
+
+	if err != nil {
+		return revs, status, err
+	}
+
+	if len(rRes.Query.Pages) == 0 {
+		return revs, status, fmt.Errorf("revisions not found")
+	}
+
+	return rRes.Query.Pages[0].Revisions, status, nil
 }
 
 // Sitematrix get all supported wikimedia projects

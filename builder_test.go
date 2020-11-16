@@ -12,6 +12,7 @@ const builderTestPageMetaURL = "/meta"
 const builderTestPageHTMLURL = "/htm"
 const builderTestSitematrixURL = "/sitematrix"
 const builderTestNamespacesURL = "/namespaces"
+const builderTestPageRevisionsURL = "/revisions"
 
 func TestBuilder(t *testing.T) {
 	builder := NewBuilder(builderTestURL).
@@ -23,10 +24,11 @@ func TestBuilder(t *testing.T) {
 		}).
 		Timeout(builderTestTimeout).
 		Options(&Options{
-			PageMetaURL:   builderTestPageMetaURL,
-			PageHTMLURL:   builderTestPageHTMLURL,
-			SitematrixURL: builderTestSitematrixURL,
-			NamespacesURL: builderTestNamespacesURL,
+			builderTestPageMetaURL,
+			builderTestPageHTMLURL,
+			builderTestPageRevisionsURL,
+			builderTestSitematrixURL,
+			builderTestNamespacesURL,
 		})
 
 	client := builder.Build()
@@ -56,6 +58,10 @@ func TestBuilder(t *testing.T) {
 	}
 
 	if client.options.NamespacesURL != builderTestNamespacesURL {
+		t.Error("namespace url mismatch")
+	}
+
+	if client.options.PageRevisionsURL != builderTestPageRevisionsURL {
 		t.Error("namespace url mismatch")
 	}
 

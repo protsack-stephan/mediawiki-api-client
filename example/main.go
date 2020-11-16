@@ -34,6 +34,20 @@ func main() {
 		log.Panic("bad request")
 	}
 
+	revisions, status, err := client.PageRevisions(context.Background(), "Pet_door", 10)
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	if status != http.StatusOK {
+		log.Panic("bad request")
+	}
+
+	for _, rev := range revisions {
+		fmt.Println(rev)
+	}
+
 	matrix, status, err := client.Sitematrix(ctx)
 
 	if err != nil {
