@@ -51,4 +51,18 @@ func main() {
 	for _, special := range matrix.Specials {
 		fmt.Println(special)
 	}
+
+	namespaces, status, err := client.Namespaces(ctx)
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	if status != http.StatusOK {
+		log.Panic("bad request")
+	}
+
+	for _, ns := range namespaces {
+		fmt.Println(ns)
+	}
 }

@@ -5,4 +5,5 @@ type Options struct {
 	PageMetaURL   string
 	PageHTMLURL   string
 	SitematrixURL string
+	NamespacesURL string
 }
