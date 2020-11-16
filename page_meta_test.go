@@ -45,6 +45,6 @@ func TestPageMeta(t *testing.T) {
 	}
 
 	if meta.Rev != metaTestRevision {
-		t.Error("meta revisionses don't match")
+		t.Error("meta revisions don't match")
 	}
 }
