@@ -17,6 +17,7 @@ func NewClient(url string) *Client {
 		options: &Options{
 			pageMetaURL,
 			pageHTMLURL,
+			pageWikitextURL,
 			revisionsURL,
 			sitematrixURL,
 			namespacesURL,
@@ -54,7 +55,7 @@ func (cl *Client) PageMeta(ctx context.Context, title string) (*PageMeta, int, e
 	return &mRes.Items[0], status, nil
 }
 
-// PageHTML get page html with revision
+// PageHTML get page html with with or without revision
 func (cl *Client) PageHTML(ctx context.Context, title string, rev ...int) ([]byte, int, error) {
 	url := cl.url + cl.options.PageHTMLURL + url.QueryEscape(title)
 
@@ -63,6 +64,34 @@ func (cl *Client) PageHTML(ctx context.Context, title string, rev ...int) ([]byt
 	}
 
 	return req(ctx, cl.httpClient, http.MethodGet, url, nil)
+}
+
+// PageWikitext get page wikitext with or without revision
+func (cl *Client) PageWikitext(ctx context.Context, title string, rev ...int) ([]byte, int, error) {
+	url := cl.url + fmt.Sprintf(cl.options.PageWikitextURL, url.QueryEscape(title))
+
+	if len(rev) > 0 {
+		url += "&rvstartid=" + strconv.Itoa(rev[0])
+	}
+
+	res, status, err := req(ctx, cl.httpClient, http.MethodGet, url, nil)
+
+	if err != nil {
+		return []byte{}, status, err
+	}
+
+	wRes := new(wikitextResponse)
+	err = json.Unmarshal(res, wRes)
+
+	if err != nil {
+		return []byte{}, status, err
+	}
+
+	if len(wRes.Query.Pages) <= 0 || len(wRes.Query.Pages[0].Revisions) <= 0 {
+		return []byte{}, status, fmt.Errorf("no data in result")
+	}
+
+	return []byte(wRes.Query.Pages[0].Revisions[0].Slots.Main.Content), status, err
 }
 
 // PageRevisions get list of page revisions

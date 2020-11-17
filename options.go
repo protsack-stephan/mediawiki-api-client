@@ -4,6 +4,7 @@ package mediawiki
 type Options struct {
 	PageMetaURL      string
 	PageHTMLURL      string
+	PageWikitextURL  string
 	PageRevisionsURL string
 	SitematrixURL    string
 	NamespacesURL    string

@@ -11,7 +11,8 @@ import (
 const builderTestURL = "http://localhost:5000"
 const builderTestTimeout = time.Second * 2
 const builderTestPageMetaURL = "/meta"
-const builderTestPageHTMLURL = "/htm"
+const builderTestPageHTMLURL = "/html"
+const builderTestPageWikitextURL = "/wikitext"
 const builderTestSitematrixURL = "/sitematrix"
 const builderTestNamespacesURL = "/namespaces"
 const builderTestPageRevisionsURL = "/revisions"
@@ -28,6 +29,7 @@ func TestBuilder(t *testing.T) {
 		Options(&Options{
 			builderTestPageMetaURL,
 			builderTestPageHTMLURL,
+			builderTestPageWikitextURL,
 			builderTestPageRevisionsURL,
 			builderTestSitematrixURL,
 			builderTestNamespacesURL,
