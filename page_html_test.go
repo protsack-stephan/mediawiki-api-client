@@ -6,6 +6,8 @@ import (
 	"net/http/httptest"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const htmlTestURL = "/html"
@@ -38,15 +40,7 @@ func TestPageHTML(t *testing.T) {
 
 	html, status, err := client.PageHTML(context.Background(), htmlTestTitle)
 
-	if status != http.StatusOK {
-		t.Fatal("html response error")
-	}
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if string(html) != htmlTestBody {
-		t.Fatal("html responses don't match")
-	}
+	assert.Equal(t, http.StatusOK, status)
+	assert.Nil(t, err)
+	assert.Equal(t, htmlTestBody, string(html))
 }

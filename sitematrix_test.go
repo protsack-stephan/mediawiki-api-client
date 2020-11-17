@@ -6,19 +6,21 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const sitematrixTestURL = "/sitematrix"
-const sitematrixProjectName = "test_project"
-const sitematrixProjectCode = "ua"
-const sitematrixCount = 2
+const sitematrixTestProjectName = "test_project"
+const sitematrixTestProjectCode = "ua"
+const sitematrixTestCount = 2
 
 func createSitematrixServer() http.Handler {
 	router := http.NewServeMux()
 
 	router.HandleFunc(sitematrixTestURL, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(fmt.Sprintf(`{ "sitematrix": { "count": %d, "0": { "code": "%s", "name": "%s",  "site": [] }, "specials": [] } }`, sitematrixCount, sitematrixProjectCode, sitematrixProjectName)))
+		w.Write([]byte(fmt.Sprintf(`{ "sitematrix": { "count": %d, "0": { "code": "%s", "name": "%s",  "site": [] }, "specials": [] } }`, sitematrixTestCount, sitematrixTestProjectCode, sitematrixTestProjectName)))
 	})
 
 	return router
@@ -33,27 +35,10 @@ func TestSitematrix(t *testing.T) {
 
 	matrix, status, err := client.Sitematrix(context.Background())
 
-	if status != http.StatusOK {
-		t.Fatal("matrix response error")
-	}
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if matrix.Count != sitematrixCount {
-		t.Error("matrix counts don't match")
-	}
-
-	if len(matrix.Projects) != 1 {
-		t.Fatal("matrix projects count is wrong")
-	}
-
-	if matrix.Projects[0].Name != sitematrixProjectName {
-		t.Error("matrix project names don't match")
-	}
-
-	if matrix.Projects[0].Code != sitematrixProjectCode {
-		t.Error("matrix project codes don't mach")
-	}
+	assert.Equal(t, http.StatusOK, status)
+	assert.Nil(t, err)
+	assert.Equal(t, sitematrixTestCount, matrix.Count)
+	assert.Equal(t, 1, len(matrix.Projects))
+	assert.Equal(t, sitematrixTestProjectName, matrix.Projects[0].Name)
+	assert.Equal(t, sitematrixTestProjectCode, matrix.Projects[0].Code)
 }

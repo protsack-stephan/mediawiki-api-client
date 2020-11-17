@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const metaTestURL = "/meta"
@@ -32,19 +34,8 @@ func TestPageMeta(t *testing.T) {
 
 	meta, status, err := client.PageMeta(context.Background(), metaTestTitle)
 
-	if status != http.StatusOK {
-		t.Fatal("meta response error")
-	}
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if meta.Title != metaTestTitle {
-		t.Error("meta titles don't match")
-	}
-
-	if meta.Rev != metaTestRevision {
-		t.Error("meta revisions don't match")
-	}
+	assert.Equal(t, http.StatusOK, status)
+	assert.Nil(t, err)
+	assert.Equal(t, metaTestTitle, meta.Title)
+	assert.Equal(t, metaTestRevision, meta.Rev)
 }
