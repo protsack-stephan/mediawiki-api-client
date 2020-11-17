@@ -18,6 +18,7 @@ func NewClient(url string) *Client {
 			PageMetaURL:   pageMetaURL,
 			PageHTMLURL:   pageHTMLURL,
 			SitematrixURL: sitematrixURL,
+			NamespacesURL: namespacesURL,
 		},
 	}
 }
@@ -89,4 +90,27 @@ func (cl *Client) Sitematrix(ctx context.Context) (*Sitematrix, int, error) {
 	}
 
 	return matrix, status, nil
+}
+
+// Namespaces get page types called "namespaces"
+func (cl *Client) Namespaces(ctx context.Context) ([]Namespace, int, error) {
+	ns := []Namespace{}
+	res, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+cl.options.NamespacesURL, nil)
+
+	if err != nil {
+		return ns, status, err
+	}
+
+	nsRes := new(namespacesResponse)
+	err = json.Unmarshal(res, &nsRes)
+
+	if err != nil {
+		return ns, status, err
+	}
+
+	for _, name := range nsRes.Query.Namespaces {
+		ns = append(ns, name)
+	}
+
+	return ns, status, nil
 }

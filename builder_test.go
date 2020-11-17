@@ -4,60 +4,42 @@ import (
 	"net/http"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestBuilder(t *testing.T) {
-	const url = "http://test.com"
-	const timeout = time.Second * 2
-	const pageMetaURL = "/meta"
-	const pageHTMLURL = "/html"
-	const sitematrixURL = "/sitematrix"
+const builderTestURL = "http://localhost:5000"
+const builderTestTimeout = time.Second * 2
+const builderTestPageMetaURL = "/meta"
+const builderTestPageHTMLURL = "/htm"
+const builderTestSitematrixURL = "/sitematrix"
+const builderTestNamespacesURL = "/namespaces"
 
-	builder := NewBuilder(url).
+func TestBuilder(t *testing.T) {
+	builder := NewBuilder(builderTestURL).
 		HTTPClient(&http.Client{
 			Transport: &http.Transport{
 				MaxIdleConns:    10,
 				IdleConnTimeout: 30 * time.Second,
 			},
 		}).
-		Timeout(timeout).
+		Timeout(builderTestTimeout).
 		Options(&Options{
-			PageMetaURL:   pageMetaURL,
-			PageHTMLURL:   pageHTMLURL,
-			SitematrixURL: sitematrixURL,
+			PageMetaURL:   builderTestPageMetaURL,
+			PageHTMLURL:   builderTestPageHTMLURL,
+			SitematrixURL: builderTestSitematrixURL,
+			NamespacesURL: builderTestNamespacesURL,
 		})
 
 	client := builder.Build()
 
-	if client.url != url {
-		t.Error("urls don't match")
-	}
-
-	if client.httpClient == nil {
-		t.Error("http client is not set")
-	}
-
-	if client.options == nil {
-		t.Fatal("http client options not set")
-	}
-
-	if client.options.PageHTMLURL != pageHTMLURL {
-		t.Error("options html url mismatch")
-	}
-
-	if client.options.PageMetaURL != pageMetaURL {
-		t.Error("options meta url mismatch")
-	}
-
-	if client.options.SitematrixURL != sitematrixURL {
-		t.Error("sitematrix meta url mismatch")
-	}
-
-	if client.httpClient.Timeout != timeout {
-		t.Error("client timeout is not set")
-	}
-
-	if client.httpClient.Transport == nil {
-		t.Error("client transport not set")
-	}
+	assert.Equal(t, builderTestURL, client.url)
+	assert.NotNil(t, client.httpClient)
+	assert.NotNil(t, client.options)
+	assert.NotNil(t, client.httpClient.Transport)
+	assert.Equal(t, builderTestPageMetaURL, client.options.PageMetaURL)
+	assert.Equal(t, builderTestPageHTMLURL, client.options.PageHTMLURL)
+	assert.Equal(t, builderTestSitematrixURL, client.options.SitematrixURL)
+	assert.Equal(t, builderTestNamespacesURL, client.options.NamespacesURL)
+	assert.Equal(t, builderTestTimeout, client.httpClient.Timeout)
 }
