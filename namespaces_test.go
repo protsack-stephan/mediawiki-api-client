@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const namespacesTestURL = "/namespaces"
@@ -32,23 +34,9 @@ func TestNamespaces(t *testing.T) {
 
 	ns, status, err := client.Namespaces(context.Background())
 
-	if status != http.StatusOK {
-		t.Fatal("namespaces response error")
-	}
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	if len(ns) != 1 {
-		t.Fatal("namespaces count is wrong")
-	}
-
-	if ns[0].ID != namespacesTestID {
-		t.Error("namespace id won't match")
-	}
-
-	if ns[0].Name != namespacesTestName {
-		t.Error("namespace name won't match")
-	}
+	assert.Equal(t, http.StatusOK, status)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(ns))
+	assert.Equal(t, namespacesTestID, ns[0].ID)
+	assert.Equal(t, namespacesTestName, ns[0].Name)
 }

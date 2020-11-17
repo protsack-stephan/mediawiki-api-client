@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const builderTestURL = "http://localhost:5000"
@@ -35,43 +37,13 @@ func TestBuilder(t *testing.T) {
 
 	client := builder.Build()
 
-	if client.url != builderTestURL {
-		t.Error("urls don't match")
-	}
-
-	if client.httpClient == nil {
-		t.Error("http client is not set")
-	}
-
-	if client.options == nil {
-		t.Fatal("http client options not set")
-	}
-
-	if client.options.PageMetaURL != builderTestPageMetaURL {
-		t.Error("options meta url mismatch")
-	}
-
-	if client.options.PageHTMLURL != builderTestPageHTMLURL {
-		t.Error("options html url mismatch")
-	}
-
-	if client.options.SitematrixURL != builderTestSitematrixURL {
-		t.Error("sitematrix meta url mismatch")
-	}
-
-	if client.options.NamespacesURL != builderTestNamespacesURL {
-		t.Error("namespace url mismatch")
-	}
-
-	if client.options.PageRevisionsURL != builderTestPageRevisionsURL {
-		t.Error("namespace url mismatch")
-	}
-
-	if client.httpClient.Timeout != builderTestTimeout {
-		t.Error("client timeout is not set")
-	}
-
-	if client.httpClient.Transport == nil {
-		t.Error("client transport not set")
-	}
+	assert.Equal(t, builderTestURL, client.url)
+	assert.NotNil(t, client.httpClient)
+	assert.NotNil(t, client.options)
+	assert.NotNil(t, client.httpClient.Transport)
+	assert.Equal(t, builderTestPageMetaURL, client.options.PageMetaURL)
+	assert.Equal(t, builderTestPageHTMLURL, client.options.PageHTMLURL)
+	assert.Equal(t, builderTestSitematrixURL, client.options.SitematrixURL)
+	assert.Equal(t, builderTestNamespacesURL, client.options.NamespacesURL)
+	assert.Equal(t, builderTestTimeout, client.httpClient.Timeout)
 }
