@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var pageRevisionsTestIDS = []int{944917628, 944912305}
@@ -34,17 +36,9 @@ func TestPageRevisions(t *testing.T) {
 
 	revs, status, err := client.PageRevisions(context.Background(), pageRevisionsTestTitle, pageRevisionsTestLimit)
 
-	if status != http.StatusOK {
-		t.Fatal("page revisions response error")
-	}
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	if len(revs) != pageRevisionsTestLimit {
-		t.Fatal("page revisions amount don't match")
-	}
+	assert.Equal(t, http.StatusOK, status)
+	assert.Nil(t, err)
+	assert.Equal(t, pageRevisionsTestLimit, len(revs))
 
 	lookup := map[int]Revision{}
 
@@ -54,7 +48,7 @@ func TestPageRevisions(t *testing.T) {
 
 	for _, revID := range pageRevisionsTestIDS {
 		if _, ok := lookup[revID]; !ok {
-			t.Error("revisions not found in the response")
+			assert.True(t, ok)
 		}
 	}
 }
