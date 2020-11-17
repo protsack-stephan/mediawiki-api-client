@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const pageWikitextTestURL = "/wikitext"
@@ -33,15 +35,7 @@ func TestPageWikitext(t *testing.T) {
 
 	wikitext, status, err := client.PageWikitext(context.Background(), pageWikitextTestTitle, pageWikitextTestRevision)
 
-	if err != nil {
-		t.Error(err)
-	}
-
-	if status != http.StatusOK {
-		t.Fatal("page wikitext response error")
-	}
-
-	if string(wikitext) != pageWikitextTestContent {
-		t.Error("page wikitext content is wrong")
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, http.StatusOK, status)
+	assert.Equal(t, pageWikitextTestContent, string(wikitext))
 }
