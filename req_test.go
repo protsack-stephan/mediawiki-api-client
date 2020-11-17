@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const reqTestURl = "/test"
@@ -27,15 +29,7 @@ func TestReq(t *testing.T) {
 
 	body, status, err := req(context.Background(), http.DefaultClient, http.MethodGet, srv.URL+reqTestURl, nil)
 
-	if status != http.StatusOK {
-		t.Error("status check failed")
-	}
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if string(body) != reqTestBody {
-		t.Error("body test failed")
-	}
+	assert.Equal(t, http.StatusOK, status)
+	assert.Nil(t, err)
+	assert.Equal(t, reqTestBody, string(body))
 }
