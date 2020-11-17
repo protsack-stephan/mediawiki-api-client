@@ -14,6 +14,7 @@ const builderTestPageMetaURL = "/meta"
 const builderTestPageHTMLURL = "/htm"
 const builderTestSitematrixURL = "/sitematrix"
 const builderTestNamespacesURL = "/namespaces"
+const builderTestPageRevisionsURL = "/revisions"
 
 func TestBuilder(t *testing.T) {
 	builder := NewBuilder(builderTestURL).
@@ -25,10 +26,11 @@ func TestBuilder(t *testing.T) {
 		}).
 		Timeout(builderTestTimeout).
 		Options(&Options{
-			PageMetaURL:   builderTestPageMetaURL,
-			PageHTMLURL:   builderTestPageHTMLURL,
-			SitematrixURL: builderTestSitematrixURL,
-			NamespacesURL: builderTestNamespacesURL,
+			builderTestPageMetaURL,
+			builderTestPageHTMLURL,
+			builderTestPageRevisionsURL,
+			builderTestSitematrixURL,
+			builderTestNamespacesURL,
 		})
 
 	client := builder.Build()
