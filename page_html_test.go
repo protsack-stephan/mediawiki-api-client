@@ -38,9 +38,8 @@ func TestPageHTML(t *testing.T) {
 	client := NewClient(srv.URL)
 	client.options.PageHTMLURL = htmlTestURL
 
-	html, status, err := client.PageHTML(context.Background(), htmlTestTitle)
+	html, err := client.PageHTML(context.Background(), htmlTestTitle)
 
-	assert.Equal(t, http.StatusOK, status)
 	assert.Nil(t, err)
 	assert.Equal(t, htmlTestBody, string(html))
 }

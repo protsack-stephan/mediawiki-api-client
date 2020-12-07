@@ -32,9 +32,8 @@ func TestPageMeta(t *testing.T) {
 	client := NewClient(srv.URL)
 	client.options.PageMetaURL = metaTestURL
 
-	meta, status, err := client.PageMeta(context.Background(), metaTestTitle)
+	meta, err := client.PageMeta(context.Background(), metaTestTitle)
 
-	assert.Equal(t, http.StatusOK, status)
 	assert.Nil(t, err)
 	assert.Equal(t, metaTestTitle, meta.Title)
 	assert.Equal(t, metaTestRevision, meta.Rev)
