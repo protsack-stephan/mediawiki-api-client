@@ -3,6 +3,7 @@ package mediawiki
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -19,7 +20,11 @@ func createMetaServer() http.Handler {
 
 	router.HandleFunc(metaTestURL+metaTestTitle, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(fmt.Sprintf(`{"items": [ { "title": "%s", "rev": %d } ]}`, metaTestTitle, metaTestRevision)))
+		_, err := w.Write([]byte(fmt.Sprintf(`{"items": [ { "title": "%s", "rev": %d } ]}`, metaTestTitle, metaTestRevision)))
+
+		if err != nil {
+			log.Panic(err)
+		}
 	})
 
 	return router

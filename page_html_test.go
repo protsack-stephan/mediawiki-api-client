@@ -2,6 +2,7 @@ package mediawiki
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -20,12 +21,20 @@ func createHTMLServer() http.Handler {
 
 	router.HandleFunc(htmlTestURL+htmlTestTitle, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(htmlTestBody))
+		_, err := w.Write([]byte(htmlTestBody))
+
+		if err != nil {
+			log.Panic(err)
+		}
 	})
 
 	router.HandleFunc(htmlTestURL+htmlTestTitle+"/"+strconv.Itoa(htmlTestRevision), func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(htmlTestBody))
+		_, err := w.Write([]byte(htmlTestBody))
+
+		if err != nil {
+			log.Panic(err)
+		}
 	})
 
 	return router

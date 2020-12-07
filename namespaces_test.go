@@ -3,6 +3,7 @@ package mediawiki
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -19,7 +20,11 @@ func createNamespacesServer() http.Handler {
 
 	router.HandleFunc(namespacesTestURL, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(fmt.Sprintf(`{ "batchcomplete": true, "query": { "namespaces": { "1": { "id": %d, "name": "%s" } } } }`, namespacesTestID, namespacesTestName)))
+		_, err := w.Write([]byte(fmt.Sprintf(`{ "batchcomplete": true, "query": { "namespaces": { "1": { "id": %d, "name": "%s" } } } }`, namespacesTestID, namespacesTestName)))
+
+		if err != nil {
+			log.Panic(err)
+		}
 	})
 
 	return router
