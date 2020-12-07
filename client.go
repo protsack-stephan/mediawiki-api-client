@@ -179,24 +179,28 @@ func (cl *Client) Sitematrix(ctx context.Context) (*Sitematrix, error) {
 }
 
 // Namespaces get page types called "namespaces"
-func (cl *Client) Namespaces(ctx context.Context) ([]Namespace, int, error) {
+func (cl *Client) Namespaces(ctx context.Context) ([]Namespace, error) {
 	ns := []Namespace{}
-	res, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+cl.options.NamespacesURL, nil)
+	data, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+cl.options.NamespacesURL, nil)
 
 	if err != nil {
-		return ns, status, err
+		return ns, err
 	}
 
-	nsRes := new(namespacesResponse)
-	err = json.Unmarshal(res, &nsRes)
+	if status != http.StatusOK {
+		return ns, fmt.Errorf(errBadRequestMsg, status, data)
+	}
+
+	res := new(namespacesResponse)
+	err = json.Unmarshal(data, res)
 
 	if err != nil {
-		return ns, status, err
+		return ns, err
 	}
 
-	for _, name := range nsRes.Query.Namespaces {
+	for _, name := range res.Query.Namespaces {
 		ns = append(ns, name)
 	}
 
-	return ns, status, nil
+	return ns, nil
 }

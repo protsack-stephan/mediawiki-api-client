@@ -32,9 +32,8 @@ func TestNamespaces(t *testing.T) {
 	client := NewClient(srv.URL)
 	client.options.NamespacesURL = namespacesTestURL
 
-	ns, status, err := client.Namespaces(context.Background())
+	ns, err := client.Namespaces(context.Background())
 
-	assert.Equal(t, http.StatusOK, status)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(ns))
 	assert.Equal(t, namespacesTestID, ns[0].ID)

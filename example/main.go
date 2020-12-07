@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 
 	"github.com/protsack-stephan/mediawiki-api-client"
 )
@@ -53,14 +52,10 @@ func main() {
 		fmt.Println(special)
 	}
 
-	namespaces, status, err := client.Namespaces(ctx)
+	namespaces, err := client.Namespaces(ctx)
 
 	if err != nil {
 		log.Panic(err)
-	}
-
-	if status != http.StatusOK {
-		log.Panic("bad request")
 	}
 
 	for _, ns := range namespaces {
