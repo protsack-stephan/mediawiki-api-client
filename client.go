@@ -76,42 +76,46 @@ func (cl *Client) PageHTML(ctx context.Context, title string, rev ...int) ([]byt
 	data, status, err := req(ctx, cl.httpClient, http.MethodGet, url, nil)
 
 	if err != nil {
-		return data, err
+		return []byte{}, err
 	}
 
 	if status != http.StatusOK {
-		return data, fmt.Errorf(errBadRequestMsg, status, data)
+		return []byte{}, fmt.Errorf(errBadRequestMsg, status, data)
 	}
 
 	return data, nil
 }
 
 // PageWikitext get page wikitext with or without revision
-func (cl *Client) PageWikitext(ctx context.Context, title string, rev ...int) ([]byte, int, error) {
+func (cl *Client) PageWikitext(ctx context.Context, title string, rev ...int) ([]byte, error) {
 	url := cl.url + fmt.Sprintf(cl.options.PageWikitextURL, url.QueryEscape(title))
 
 	if len(rev) > 0 {
 		url += "&rvstartid=" + strconv.Itoa(rev[0])
 	}
 
-	res, status, err := req(ctx, cl.httpClient, http.MethodGet, url, nil)
+	data, status, err := req(ctx, cl.httpClient, http.MethodGet, url, nil)
 
 	if err != nil {
-		return []byte{}, status, err
+		return []byte{}, err
 	}
 
-	wRes := new(wikitextResponse)
-	err = json.Unmarshal(res, wRes)
+	if status != http.StatusOK {
+		return []byte{}, fmt.Errorf(errBadRequestMsg, status, data)
+	}
+
+	res := new(wikitextResponse)
+	err = json.Unmarshal(data, res)
 
 	if err != nil {
-		return []byte{}, status, err
+		return []byte{}, err
 	}
 
-	if len(wRes.Query.Pages) <= 0 || len(wRes.Query.Pages[0].Revisions) <= 0 {
-		return []byte{}, status, fmt.Errorf("no data in result")
+	if len(res.Query.Pages) <= 0 || len(res.Query.Pages[0].Revisions) <= 0 {
+		return []byte{}, ErrEmptyResult
 	}
 
-	return []byte(wRes.Query.Pages[0].Revisions[0].Slots.Main.Content), status, err
+	return []byte(res.Query.Pages[0].Revisions[0].Slots.Main.Content), err
 }
 
 // PageRevisions get list of page revisions

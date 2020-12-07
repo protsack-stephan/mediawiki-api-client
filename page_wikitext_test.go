@@ -33,9 +33,8 @@ func TestPageWikitext(t *testing.T) {
 	client := NewClient(srv.URL)
 	client.options.PageWikitextURL = pageWikitextTestURL + "/%s?test=1"
 
-	wikitext, status, err := client.PageWikitext(context.Background(), pageWikitextTestTitle, pageWikitextTestRevision)
+	wikitext, err := client.PageWikitext(context.Background(), pageWikitextTestTitle, pageWikitextTestRevision)
 
 	assert.Nil(t, err)
-	assert.Equal(t, http.StatusOK, status)
 	assert.Equal(t, pageWikitextTestContent, string(wikitext))
 }

@@ -74,14 +74,10 @@ func main() {
 		fmt.Println(ns)
 	}
 
-	wikitext, status, err := client.PageWikitext(ctx, "Main")
+	wikitext, err := client.PageWikitext(ctx, "Main")
 
 	if err != nil {
 		log.Panic(err)
-	}
-
-	if status != http.StatusOK {
-		log.Panic("bad request")
 	}
 
 	fmt.Println(string(wikitext))
