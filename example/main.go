@@ -12,19 +12,15 @@ import (
 func main() {
 	client := mediawiki.NewClient("https://en.wikipedia.org/")
 	ctx := context.Background()
-	meta, status, err := client.PageMeta(ctx, "Pet_door")
+	meta, err := client.PageMeta(ctx, "Pet_door")
 
 	if err != nil {
 		log.Panic(err)
 	}
 
-	if status != http.StatusOK {
-		log.Panic("bad request")
-	}
-
 	fmt.Println(meta)
 
-	_, status, err = client.PageHTML(ctx, "Pet_door", meta.Rev)
+	_, status, err := client.PageHTML(ctx, "Pet_door", meta.Rev)
 
 	if err != nil {
 		log.Panic(err)

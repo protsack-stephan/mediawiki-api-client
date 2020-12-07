@@ -3,11 +3,17 @@ package mediawiki
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
 )
+
+// ErrEmptyResult not items in result list
+var ErrEmptyResult = errors.New("empty response result")
+
+const errBadRequestMsg = "status: '%d' body: '%s'"
 
 // NewClient create new client instance
 func NewClient(url string) *Client {
@@ -33,26 +39,30 @@ type Client struct {
 }
 
 // PageMeta get page meta data
-func (cl *Client) PageMeta(ctx context.Context, title string) (*PageMeta, int, error) {
+func (cl *Client) PageMeta(ctx context.Context, title string) (*PageMeta, error) {
 	meta := new(PageMeta)
-	res, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+cl.options.PageMetaURL+url.QueryEscape(title), nil)
+	data, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+cl.options.PageMetaURL+url.QueryEscape(title), nil)
 
 	if err != nil {
-		return meta, status, err
+		return meta, err
 	}
 
-	mRes := new(pageMetaResponse)
-	err = json.Unmarshal(res, mRes)
+	if status != http.StatusOK {
+		return meta, fmt.Errorf(errBadRequestMsg, status, data)
+	}
+
+	res := new(pageMetaResponse)
+	err = json.Unmarshal(data, res)
 
 	if err != nil {
-		return meta, status, err
+		return meta, err
 	}
 
-	if mRes.Items == nil || len(mRes.Items) <= 0 {
-		return meta, status, fmt.Errorf("zero items in result")
+	if res.Items == nil || len(res.Items) <= 0 {
+		return meta, ErrEmptyResult
 	}
 
-	return &mRes.Items[0], status, nil
+	return &res.Items[0], nil
 }
 
 // PageHTML get page html with with or without revision
