@@ -39,14 +39,10 @@ func main() {
 		fmt.Println(rev)
 	}
 
-	matrix, status, err := client.Sitematrix(ctx)
+	matrix, err := client.Sitematrix(ctx)
 
 	if err != nil {
 		log.Panic(err)
-	}
-
-	if status != http.StatusOK {
-		log.Panic("bad request")
 	}
 
 	for _, project := range matrix.Projects {

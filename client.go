@@ -146,32 +146,36 @@ func (cl *Client) PageRevisions(ctx context.Context, title string, limit int) ([
 }
 
 // Sitematrix get all supported wikimedia projects
-func (cl *Client) Sitematrix(ctx context.Context) (*Sitematrix, int, error) {
+func (cl *Client) Sitematrix(ctx context.Context) (*Sitematrix, error) {
 	matrix := new(Sitematrix)
-	res, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+cl.options.SitematrixURL, nil)
+	data, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+cl.options.SitematrixURL, nil)
 
 	if err != nil {
-		return matrix, status, err
+		return matrix, err
 	}
 
-	spRes := new(siteMatrixSpecialResponce)
-	err = json.Unmarshal(res, spRes)
+	if status != http.StatusOK {
+		return matrix, fmt.Errorf(errBadRequestMsg, status, data)
+	}
+
+	special := new(siteMatrixSpecialResponce)
+	err = json.Unmarshal(data, special)
 
 	if err != nil {
-		return matrix, status, err
+		return matrix, err
 	}
 
-	matrix.Count, matrix.Specials = spRes.Sitematrix.Count, spRes.Sitematrix.Specials
-	mRes := new(siteMatrixMainResponse)
-	json.Unmarshal(res, mRes)
+	matrix.Count, matrix.Specials = special.Sitematrix.Count, special.Sitematrix.Specials
+	main := new(siteMatrixMainResponse)
+	_ = json.Unmarshal(data, main)
 
-	for num, project := range mRes.Sitematrix {
+	for num, project := range main.Sitematrix {
 		if num != "count" && num != "specials" {
 			matrix.Projects = append(matrix.Projects, project)
 		}
 	}
 
-	return matrix, status, nil
+	return matrix, nil
 }
 
 // Namespaces get page types called "namespaces"

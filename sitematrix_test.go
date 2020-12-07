@@ -33,9 +33,8 @@ func TestSitematrix(t *testing.T) {
 	client := NewClient(srv.URL)
 	client.options.SitematrixURL = sitematrixTestURL
 
-	matrix, status, err := client.Sitematrix(context.Background())
+	matrix, err := client.Sitematrix(context.Background())
 
-	assert.Equal(t, http.StatusOK, status)
 	assert.Nil(t, err)
 	assert.Equal(t, sitematrixTestCount, matrix.Count)
 	assert.Equal(t, 1, len(matrix.Projects))
