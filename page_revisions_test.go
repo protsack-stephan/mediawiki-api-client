@@ -34,9 +34,8 @@ func TestPageRevisions(t *testing.T) {
 	client := NewClient(srv.URL)
 	client.options.PageRevisionsURL = pageRevisionsTestURL
 
-	revs, status, err := client.PageRevisions(context.Background(), pageRevisionsTestTitle, pageRevisionsTestLimit)
+	revs, err := client.PageRevisions(context.Background(), pageRevisionsTestTitle, pageRevisionsTestLimit)
 
-	assert.Equal(t, http.StatusOK, status)
 	assert.Nil(t, err)
 	assert.Equal(t, pageRevisionsTestLimit, len(revs))
 

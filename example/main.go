@@ -12,6 +12,7 @@ import (
 func main() {
 	client := mediawiki.NewClient("https://en.wikipedia.org/")
 	ctx := context.Background()
+
 	meta, err := client.PageMeta(ctx, "Pet_door")
 
 	if err != nil {
@@ -28,14 +29,10 @@ func main() {
 
 	fmt.Println(string(data))
 
-	revisions, status, err := client.PageRevisions(context.Background(), "Pet_door", 10)
+	revisions, err := client.PageRevisions(ctx, "Pet_door", 10)
 
 	if err != nil {
 		log.Panic(err)
-	}
-
-	if status != http.StatusOK {
-		log.Panic("bad request")
 	}
 
 	for _, rev := range revisions {

@@ -119,26 +119,30 @@ func (cl *Client) PageWikitext(ctx context.Context, title string, rev ...int) ([
 }
 
 // PageRevisions get list of page revisions
-func (cl *Client) PageRevisions(ctx context.Context, title string, limit int) ([]Revision, int, error) {
+func (cl *Client) PageRevisions(ctx context.Context, title string, limit int) ([]Revision, error) {
 	revs := []Revision{}
-	res, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+fmt.Sprintf(cl.options.PageRevisionsURL, limit, url.QueryEscape(title)), nil)
+	data, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+fmt.Sprintf(cl.options.PageRevisionsURL, limit, url.QueryEscape(title)), nil)
 
 	if err != nil {
-		return revs, status, err
+		return revs, err
 	}
 
-	rRes := new(revisionsResponse)
-	err = json.Unmarshal(res, rRes)
+	if status != http.StatusOK {
+		return revs, fmt.Errorf(errBadRequestMsg, status, data)
+	}
+
+	res := new(revisionsResponse)
+	err = json.Unmarshal(data, res)
 
 	if err != nil {
-		return revs, status, err
+		return revs, err
 	}
 
-	if len(rRes.Query.Pages) == 0 {
-		return revs, status, fmt.Errorf("revisions not found")
+	if len(res.Query.Pages) == 0 || len(res.Query.Pages[0].Revisions) == 0 {
+		return revs, ErrEmptyResult
 	}
 
-	return rRes.Query.Pages[0].Revisions, status, nil
+	return res.Query.Pages[0].Revisions, nil
 }
 
 // Sitematrix get all supported wikimedia projects
