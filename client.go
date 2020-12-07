@@ -66,14 +66,24 @@ func (cl *Client) PageMeta(ctx context.Context, title string) (*PageMeta, error)
 }
 
 // PageHTML get page html with with or without revision
-func (cl *Client) PageHTML(ctx context.Context, title string, rev ...int) ([]byte, int, error) {
+func (cl *Client) PageHTML(ctx context.Context, title string, rev ...int) ([]byte, error) {
 	url := cl.url + cl.options.PageHTMLURL + url.QueryEscape(title)
 
 	if len(rev) > 0 {
 		url += "/" + strconv.Itoa(rev[0])
 	}
 
-	return req(ctx, cl.httpClient, http.MethodGet, url, nil)
+	data, status, err := req(ctx, cl.httpClient, http.MethodGet, url, nil)
+
+	if err != nil {
+		return data, err
+	}
+
+	if status != http.StatusOK {
+		return data, fmt.Errorf(errBadRequestMsg, status, data)
+	}
+
+	return data, nil
 }
 
 // PageWikitext get page wikitext with or without revision

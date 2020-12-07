@@ -20,15 +20,13 @@ func main() {
 
 	fmt.Println(meta)
 
-	_, status, err := client.PageHTML(ctx, "Pet_door", meta.Rev)
+	data, err := client.PageHTML(ctx, "Pet_door", meta.Rev)
 
 	if err != nil {
 		log.Panic(err)
 	}
 
-	if status != http.StatusOK {
-		log.Panic("bad request")
-	}
+	fmt.Println(string(data))
 
 	revisions, status, err := client.PageRevisions(context.Background(), "Pet_door", 10)
 
