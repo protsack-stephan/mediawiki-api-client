@@ -3,11 +3,17 @@ package mediawiki
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
 )
+
+// ErrEmptyResult not items in result list
+var ErrEmptyResult = errors.New("empty response result")
+
+const errBadRequestMsg = "status: '%d' body: '%s'"
 
 // NewClient create new client instance
 func NewClient(url string) *Client {
@@ -33,138 +39,168 @@ type Client struct {
 }
 
 // PageMeta get page meta data
-func (cl *Client) PageMeta(ctx context.Context, title string) (*PageMeta, int, error) {
+func (cl *Client) PageMeta(ctx context.Context, title string) (*PageMeta, error) {
 	meta := new(PageMeta)
-	res, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+cl.options.PageMetaURL+url.QueryEscape(title), nil)
+	data, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+cl.options.PageMetaURL+url.QueryEscape(title), nil)
 
 	if err != nil {
-		return meta, status, err
+		return meta, err
 	}
 
-	mRes := new(pageMetaResponse)
-	err = json.Unmarshal(res, mRes)
+	if status != http.StatusOK {
+		return meta, fmt.Errorf(errBadRequestMsg, status, data)
+	}
+
+	res := new(pageMetaResponse)
+	err = json.Unmarshal(data, res)
 
 	if err != nil {
-		return meta, status, err
+		return meta, err
 	}
 
-	if mRes.Items == nil || len(mRes.Items) <= 0 {
-		return meta, status, fmt.Errorf("zero items in result")
+	if res.Items == nil || len(res.Items) <= 0 {
+		return meta, ErrEmptyResult
 	}
 
-	return &mRes.Items[0], status, nil
+	return &res.Items[0], nil
 }
 
 // PageHTML get page html with with or without revision
-func (cl *Client) PageHTML(ctx context.Context, title string, rev ...int) ([]byte, int, error) {
+func (cl *Client) PageHTML(ctx context.Context, title string, rev ...int) ([]byte, error) {
 	url := cl.url + cl.options.PageHTMLURL + url.QueryEscape(title)
 
 	if len(rev) > 0 {
 		url += "/" + strconv.Itoa(rev[0])
 	}
 
-	return req(ctx, cl.httpClient, http.MethodGet, url, nil)
+	data, status, err := req(ctx, cl.httpClient, http.MethodGet, url, nil)
+
+	if err != nil {
+		return []byte{}, err
+	}
+
+	if status != http.StatusOK {
+		return []byte{}, fmt.Errorf(errBadRequestMsg, status, data)
+	}
+
+	return data, nil
 }
 
 // PageWikitext get page wikitext with or without revision
-func (cl *Client) PageWikitext(ctx context.Context, title string, rev ...int) ([]byte, int, error) {
+func (cl *Client) PageWikitext(ctx context.Context, title string, rev ...int) ([]byte, error) {
 	url := cl.url + fmt.Sprintf(cl.options.PageWikitextURL, url.QueryEscape(title))
 
 	if len(rev) > 0 {
 		url += "&rvstartid=" + strconv.Itoa(rev[0])
 	}
 
-	res, status, err := req(ctx, cl.httpClient, http.MethodGet, url, nil)
+	data, status, err := req(ctx, cl.httpClient, http.MethodGet, url, nil)
 
 	if err != nil {
-		return []byte{}, status, err
+		return []byte{}, err
 	}
 
-	wRes := new(wikitextResponse)
-	err = json.Unmarshal(res, wRes)
+	if status != http.StatusOK {
+		return []byte{}, fmt.Errorf(errBadRequestMsg, status, data)
+	}
+
+	res := new(wikitextResponse)
+	err = json.Unmarshal(data, res)
 
 	if err != nil {
-		return []byte{}, status, err
+		return []byte{}, err
 	}
 
-	if len(wRes.Query.Pages) <= 0 || len(wRes.Query.Pages[0].Revisions) <= 0 {
-		return []byte{}, status, fmt.Errorf("no data in result")
+	if len(res.Query.Pages) <= 0 || len(res.Query.Pages[0].Revisions) <= 0 {
+		return []byte{}, ErrEmptyResult
 	}
 
-	return []byte(wRes.Query.Pages[0].Revisions[0].Slots.Main.Content), status, err
+	return []byte(res.Query.Pages[0].Revisions[0].Slots.Main.Content), err
 }
 
 // PageRevisions get list of page revisions
-func (cl *Client) PageRevisions(ctx context.Context, title string, limit int) ([]Revision, int, error) {
+func (cl *Client) PageRevisions(ctx context.Context, title string, limit int) ([]Revision, error) {
 	revs := []Revision{}
-	res, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+fmt.Sprintf(cl.options.PageRevisionsURL, limit, url.QueryEscape(title)), nil)
+	data, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+fmt.Sprintf(cl.options.PageRevisionsURL, limit, url.QueryEscape(title)), nil)
 
 	if err != nil {
-		return revs, status, err
+		return revs, err
 	}
 
-	rRes := new(revisionsResponse)
-	err = json.Unmarshal(res, rRes)
+	if status != http.StatusOK {
+		return revs, fmt.Errorf(errBadRequestMsg, status, data)
+	}
+
+	res := new(revisionsResponse)
+	err = json.Unmarshal(data, res)
 
 	if err != nil {
-		return revs, status, err
+		return revs, err
 	}
 
-	if len(rRes.Query.Pages) == 0 {
-		return revs, status, fmt.Errorf("revisions not found")
+	if len(res.Query.Pages) == 0 || len(res.Query.Pages[0].Revisions) == 0 {
+		return revs, ErrEmptyResult
 	}
 
-	return rRes.Query.Pages[0].Revisions, status, nil
+	return res.Query.Pages[0].Revisions, nil
 }
 
 // Sitematrix get all supported wikimedia projects
-func (cl *Client) Sitematrix(ctx context.Context) (*Sitematrix, int, error) {
+func (cl *Client) Sitematrix(ctx context.Context) (*Sitematrix, error) {
 	matrix := new(Sitematrix)
-	res, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+cl.options.SitematrixURL, nil)
+	data, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+cl.options.SitematrixURL, nil)
 
 	if err != nil {
-		return matrix, status, err
+		return matrix, err
 	}
 
-	spRes := new(siteMatrixSpecialResponce)
-	err = json.Unmarshal(res, spRes)
+	if status != http.StatusOK {
+		return matrix, fmt.Errorf(errBadRequestMsg, status, data)
+	}
+
+	special := new(siteMatrixSpecialResponce)
+	err = json.Unmarshal(data, special)
 
 	if err != nil {
-		return matrix, status, err
+		return matrix, err
 	}
 
-	matrix.Count, matrix.Specials = spRes.Sitematrix.Count, spRes.Sitematrix.Specials
-	mRes := new(siteMatrixMainResponse)
-	json.Unmarshal(res, mRes)
+	matrix.Count, matrix.Specials = special.Sitematrix.Count, special.Sitematrix.Specials
+	main := new(siteMatrixMainResponse)
+	_ = json.Unmarshal(data, main)
 
-	for num, project := range mRes.Sitematrix {
+	for num, project := range main.Sitematrix {
 		if num != "count" && num != "specials" {
 			matrix.Projects = append(matrix.Projects, project)
 		}
 	}
 
-	return matrix, status, nil
+	return matrix, nil
 }
 
 // Namespaces get page types called "namespaces"
-func (cl *Client) Namespaces(ctx context.Context) ([]Namespace, int, error) {
+func (cl *Client) Namespaces(ctx context.Context) ([]Namespace, error) {
 	ns := []Namespace{}
-	res, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+cl.options.NamespacesURL, nil)
+	data, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+cl.options.NamespacesURL, nil)
 
 	if err != nil {
-		return ns, status, err
+		return ns, err
 	}
 
-	nsRes := new(namespacesResponse)
-	err = json.Unmarshal(res, &nsRes)
+	if status != http.StatusOK {
+		return ns, fmt.Errorf(errBadRequestMsg, status, data)
+	}
+
+	res := new(namespacesResponse)
+	err = json.Unmarshal(data, res)
 
 	if err != nil {
-		return ns, status, err
+		return ns, err
 	}
 
-	for _, name := range nsRes.Query.Namespaces {
+	for _, name := range res.Query.Namespaces {
 		ns = append(ns, name)
 	}
 
-	return ns, status, nil
+	return ns, nil
 }

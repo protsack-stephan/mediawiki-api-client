@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 
 	"github.com/protsack-stephan/mediawiki-api-client"
 )
@@ -12,50 +11,37 @@ import (
 func main() {
 	client := mediawiki.NewClient("https://en.wikipedia.org/")
 	ctx := context.Background()
-	meta, status, err := client.PageMeta(ctx, "Pet_door")
+
+	meta, err := client.PageMeta(ctx, "Pet_door")
 
 	if err != nil {
 		log.Panic(err)
-	}
-
-	if status != http.StatusOK {
-		log.Panic("bad request")
 	}
 
 	fmt.Println(meta)
 
-	_, status, err = client.PageHTML(ctx, "Pet_door", meta.Rev)
+	data, err := client.PageHTML(ctx, "Pet_door", meta.Rev)
 
 	if err != nil {
 		log.Panic(err)
 	}
 
-	if status != http.StatusOK {
-		log.Panic("bad request")
-	}
+	fmt.Println(string(data))
 
-	revisions, status, err := client.PageRevisions(context.Background(), "Pet_door", 10)
+	revisions, err := client.PageRevisions(ctx, "Pet_door", 10)
 
 	if err != nil {
 		log.Panic(err)
-	}
-
-	if status != http.StatusOK {
-		log.Panic("bad request")
 	}
 
 	for _, rev := range revisions {
 		fmt.Println(rev)
 	}
 
-	matrix, status, err := client.Sitematrix(ctx)
+	matrix, err := client.Sitematrix(ctx)
 
 	if err != nil {
 		log.Panic(err)
-	}
-
-	if status != http.StatusOK {
-		log.Panic("bad request")
 	}
 
 	for _, project := range matrix.Projects {
@@ -66,28 +52,20 @@ func main() {
 		fmt.Println(special)
 	}
 
-	namespaces, status, err := client.Namespaces(ctx)
+	namespaces, err := client.Namespaces(ctx)
 
 	if err != nil {
 		log.Panic(err)
-	}
-
-	if status != http.StatusOK {
-		log.Panic("bad request")
 	}
 
 	for _, ns := range namespaces {
 		fmt.Println(ns)
 	}
 
-	wikitext, status, err := client.PageWikitext(ctx, "Main")
+	wikitext, err := client.PageWikitext(ctx, "Main")
 
 	if err != nil {
 		log.Panic(err)
-	}
-
-	if status != http.StatusOK {
-		log.Panic("bad request")
 	}
 
 	fmt.Println(string(wikitext))

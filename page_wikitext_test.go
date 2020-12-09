@@ -3,6 +3,7 @@ package mediawiki
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -20,7 +21,11 @@ func createPageWikitextServer() http.Handler {
 
 	router.HandleFunc(pageWikitextTestURL+"/"+pageWikitextTestTitle, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(fmt.Sprintf(`{ "continue": { "rvcontinue": "20020106234815|248709", "continue": "||" }, "query": { "pages": [ { "pageid": 9228, "ns": 0, "title": "%s", "revisions": [ { "slots": { "main": { "contentmodel": "wikitext", "contentformat": "text/x-wiki", "content": "%s" } } } ] } ] } }`, pageWikitextTestTitle, pageWikitextTestContent)))
+		_, err := w.Write([]byte(fmt.Sprintf(`{ "continue": { "rvcontinue": "20020106234815|248709", "continue": "||" }, "query": { "pages": [ { "pageid": 9228, "ns": 0, "title": "%s", "revisions": [ { "slots": { "main": { "contentmodel": "wikitext", "contentformat": "text/x-wiki", "content": "%s" } } } ] } ] } }`, pageWikitextTestTitle, pageWikitextTestContent)))
+
+		if err != nil {
+			log.Panic(err)
+		}
 	})
 
 	return router
@@ -33,9 +38,8 @@ func TestPageWikitext(t *testing.T) {
 	client := NewClient(srv.URL)
 	client.options.PageWikitextURL = pageWikitextTestURL + "/%s?test=1"
 
-	wikitext, status, err := client.PageWikitext(context.Background(), pageWikitextTestTitle, pageWikitextTestRevision)
+	wikitext, err := client.PageWikitext(context.Background(), pageWikitextTestTitle, pageWikitextTestRevision)
 
 	assert.Nil(t, err)
-	assert.Equal(t, http.StatusOK, status)
 	assert.Equal(t, pageWikitextTestContent, string(wikitext))
 }

@@ -2,6 +2,7 @@ package mediawiki
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -17,7 +18,11 @@ func createReqServer() http.Handler {
 
 	router.HandleFunc(reqTestURL, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(reqTestBody))
+		_, err := w.Write([]byte(reqTestBody))
+
+		if err != nil {
+			log.Panic(err)
+		}
 	})
 
 	return router

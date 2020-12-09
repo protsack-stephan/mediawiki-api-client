@@ -3,6 +3,7 @@ package mediawiki
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -20,7 +21,11 @@ func createSitematrixServer() http.Handler {
 
 	router.HandleFunc(sitematrixTestURL, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(fmt.Sprintf(`{ "sitematrix": { "count": %d, "0": { "code": "%s", "name": "%s",  "site": [] }, "specials": [] } }`, sitematrixTestCount, sitematrixTestProjectCode, sitematrixTestProjectName)))
+		_, err := w.Write([]byte(fmt.Sprintf(`{ "sitematrix": { "count": %d, "0": { "code": "%s", "name": "%s",  "site": [] }, "specials": [] } }`, sitematrixTestCount, sitematrixTestProjectCode, sitematrixTestProjectName)))
+
+		if err != nil {
+			log.Panic(err)
+		}
 	})
 
 	return router
@@ -33,9 +38,8 @@ func TestSitematrix(t *testing.T) {
 	client := NewClient(srv.URL)
 	client.options.SitematrixURL = sitematrixTestURL
 
-	matrix, status, err := client.Sitematrix(context.Background())
+	matrix, err := client.Sitematrix(context.Background())
 
-	assert.Equal(t, http.StatusOK, status)
 	assert.Nil(t, err)
 	assert.Equal(t, sitematrixTestCount, matrix.Count)
 	assert.Equal(t, 1, len(matrix.Projects))
