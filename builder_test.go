@@ -16,6 +16,7 @@ const builderTestPageWikitextURL = "/wikitext"
 const builderTestSitematrixURL = "/sitematrix"
 const builderTestNamespacesURL = "/namespaces"
 const builderTestPageRevisionsURL = "/revisions"
+const builderTestPagesDataURL = "/pages-data"
 
 func TestBuilder(t *testing.T) {
 	builder := NewBuilder(builderTestURL).
@@ -33,6 +34,7 @@ func TestBuilder(t *testing.T) {
 			builderTestPageRevisionsURL,
 			builderTestSitematrixURL,
 			builderTestNamespacesURL,
+			builderTestPagesDataURL,
 		})
 
 	client := builder.Build()
@@ -45,5 +47,6 @@ func TestBuilder(t *testing.T) {
 	assert.Equal(t, builderTestPageHTMLURL, client.options.PageHTMLURL)
 	assert.Equal(t, builderTestSitematrixURL, client.options.SitematrixURL)
 	assert.Equal(t, builderTestNamespacesURL, client.options.NamespacesURL)
+	assert.Equal(t, builderTestPagesDataURL, client.options.PageDataURL)
 	assert.Equal(t, builderTestTimeout, client.httpClient.Timeout)
 }

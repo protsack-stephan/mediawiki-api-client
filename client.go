@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 )
 
 // ErrEmptyResult not items in result list
@@ -27,6 +28,7 @@ func NewClient(url string) *Client {
 			revisionsURL,
 			sitematrixURL,
 			namespacesURL,
+			pageDataURL,
 		},
 	}
 }
@@ -63,6 +65,39 @@ func (cl *Client) PageMeta(ctx context.Context, title string) (*PageMeta, error)
 	}
 
 	return &res.Items[0], nil
+}
+
+// PagesData get page data from Actions API
+func (cl *Client) PagesData(ctx context.Context, title ...string) ([]PageData, error) {
+	res := new(pageDataResponse)
+	titles := []string{}
+
+	for _, title := range title {
+		titles = append(titles, url.QueryEscape(title))
+	}
+
+	data, status, err := req(
+		ctx,
+		cl.httpClient,
+		http.MethodGet,
+		fmt.Sprintf("%s%s", cl.url, fmt.Sprintf(cl.options.PageDataURL, strings.Join(titles, "|"))),
+		nil)
+
+	if err != nil {
+		return res.Query.Pages, err
+	}
+
+	if status != http.StatusOK {
+		return res.Query.Pages, fmt.Errorf(errBadRequestMsg, status, data)
+	}
+
+	err = json.Unmarshal(data, res)
+
+	if err != nil {
+		return res.Query.Pages, err
+	}
+
+	return res.Query.Pages, nil
 }
 
 // PageHTML get page html with with or without revision
