@@ -9,6 +9,7 @@ type PageData struct {
 	PageID    int    `json:"pageid"`
 	Ns        int    `json:"ns"`
 	Title     string `json:"title"`
+	Missing   bool   `json:"missing"`
 	Pageprops struct {
 		WikibaseItem string `json:"wikibase_item"`
 	} `json:"pageprops"`
