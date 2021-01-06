@@ -8,4 +8,5 @@ type Options struct {
 	PageRevisionsURL string
 	SitematrixURL    string
 	NamespacesURL    string
+	PageDataURL      string
 }
