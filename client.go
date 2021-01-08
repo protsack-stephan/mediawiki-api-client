@@ -68,36 +68,68 @@ func (cl *Client) PageMeta(ctx context.Context, title string) (*PageMeta, error)
 }
 
 // PagesData get page data from Actions API
-func (cl *Client) PagesData(ctx context.Context, title ...string) ([]PageData, error) {
+func (cl *Client) PagesData(ctx context.Context, titles ...string) (map[string]PageData, error) {
+	pages := make(map[string]PageData, 0)
 	res := new(pageDataResponse)
-	titles := []string{}
-
-	for _, title := range title {
-		titles = append(titles, url.QueryEscape(title))
+	body := url.Values{
+		"action":        []string{"query"},
+		"prop":          []string{"pageprops|info|revisions"},
+		"ppprop":        []string{"wikibase_item"},
+		"redirects":     []string{"1"},
+		"titles":        []string{strings.Join(titles, "|")},
+		"formatversion": []string{"2"},
+		"format":        []string{"json"},
 	}
 
 	data, status, err := req(
 		ctx,
 		cl.httpClient,
-		http.MethodGet,
-		fmt.Sprintf("%s%s", cl.url, fmt.Sprintf(cl.options.PageDataURL, strings.Join(titles, "|"))),
-		nil)
+		http.MethodPost,
+		fmt.Sprintf("%s%s", cl.url, cl.options.PageDataURL),
+		strings.NewReader(body.Encode()),
+		map[string]string{
+			"Content-Type": "application/x-www-form-urlencoded",
+		})
 
 	if err != nil {
-		return res.Query.Pages, err
+		return pages, err
 	}
 
 	if status != http.StatusOK {
-		return res.Query.Pages, fmt.Errorf(errBadRequestMsg, status, data)
+		return pages, fmt.Errorf(errBadRequestMsg, status, data)
 	}
 
 	err = json.Unmarshal(data, res)
 
 	if err != nil {
-		return res.Query.Pages, err
+		return pages, err
 	}
 
-	return res.Query.Pages, nil
+	lookup := map[string]bool{}
+
+	for _, title := range titles {
+		lookup[title] = true
+	}
+
+	normalized := map[string]string{}
+
+	for _, title := range res.Query.Normalized {
+		if _, ok := lookup[title.From]; ok {
+			normalized[title.To] = title.From
+		}
+	}
+
+	for _, page := range res.Query.Pages {
+		if !page.Missing {
+			if title, ok := normalized[page.Title]; ok {
+				pages[title] = page
+			} else if _, ok := lookup[page.Title]; ok {
+				pages[page.Title] = page
+			}
+		}
+	}
+
+	return pages, nil
 }
 
 // PageHTML get page html with with or without revision
