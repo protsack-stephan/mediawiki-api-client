@@ -69,7 +69,7 @@ func (cl *Client) PageMeta(ctx context.Context, title string) (*PageMeta, error)
 
 // PagesData get page data from Actions API
 func (cl *Client) PagesData(ctx context.Context, titles ...string) (map[string]PageData, error) {
-	pages := make(map[string]PageData, 0)
+	pages := make(map[string]PageData)
 	res := new(pageDataResponse)
 	body := url.Values{
 		"action":        []string{"query"},
