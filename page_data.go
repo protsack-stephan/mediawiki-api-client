@@ -2,7 +2,7 @@ package mediawiki
 
 import "time"
 
-const pageDataURL = "/w/api.php?action=query&prop=pageprops|info|revisions&ppprop=wikibase_item&redirects=1&titles=%s&formatversion=2&format=json"
+const pageDataURL = "/w/api.php"
 
 // PageData page data returned from actions API
 type PageData struct {
@@ -33,6 +33,15 @@ type PageData struct {
 type pageDataResponse struct {
 	Batchcomplete bool `json:"batchcomplete"`
 	Query         struct {
+		Normalized []struct {
+			Fromencoded bool   `json:"fromencoded"`
+			From        string `json:"from"`
+			To          string `json:"to"`
+		} `json:"normalized"`
+		Redirects []struct {
+			From string `json:"from"`
+			To   string `json:"to"`
+		} `json:"redirects"`
 		Pages []PageData `json:"pages"`
 	} `json:"query"`
 }
