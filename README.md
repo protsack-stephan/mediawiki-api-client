@@ -8,17 +8,13 @@ client := mediawiki.NewClient("https://en.wikipedia.org/") // creating the clien
 
 ctx := context.Background() // getting context instance
 
-meta, status, err := client.PageMeta(ctx, "Pet_door") // accessing "Pet_door" page meta data
+meta, err := client.PageMeta(ctx, "Pet_door") // accessing "Pet_door" page meta data
 
 if err != nil {
   log.Panic(err)
 }
 
-if status != http.StatusOK {
-  log.Panic("bad request")
-}
-
 fmt.Println(meta)
 ```
 
-### *Note that we are far frow supporting all API endpoints here and will be adding more support based on our needs. Feel free to create PRs and add new support.
+### *Note that we are far from supporting all API endpoints here and will be adding more support based on our needs. Feel free to open a PR and add new endpoints to support.
