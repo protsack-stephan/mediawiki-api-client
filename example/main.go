@@ -69,4 +69,12 @@ func main() {
 	}
 
 	fmt.Println(string(wikitext))
+
+	pdata, err := client.PagesData(ctx, "Barack_Obama")
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	fmt.Println(pdata["Barack_Obama"])
 }

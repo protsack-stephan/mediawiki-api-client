@@ -73,7 +73,10 @@ func (cl *Client) PagesData(ctx context.Context, titles ...string) (map[string]P
 	res := new(pageDataResponse)
 	body := url.Values{
 		"action":        []string{"query"},
-		"prop":          []string{"pageprops|info|revisions"},
+		"prop":          []string{"info|categories|revisions|templates|wbentityusage|pageprops|redirects"},
+		"rvprop":        []string{"comment|oresscores|content|ids|timestamp|tags|user"},
+		"rvslots":       []string{"main"},
+		"inprop":        []string{"displaytitle|protection|url"},
 		"ppprop":        []string{"wikibase_item"},
 		"redirects":     []string{"1"},
 		"titles":        []string{strings.Join(titles, "|")},
@@ -99,9 +102,7 @@ func (cl *Client) PagesData(ctx context.Context, titles ...string) (map[string]P
 		return pages, fmt.Errorf(errBadRequestMsg, status, data)
 	}
 
-	err = json.Unmarshal(data, res)
-
-	if err != nil {
+	if err := json.Unmarshal(data, res); err != nil {
 		return pages, err
 	}
 
