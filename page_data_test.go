@@ -16,6 +16,16 @@ const pageDataTestRedirectTitle = "Redirect"
 const pageDataTestMissingTitle = "NotThere"
 const pageDataTestQID = "Q90"
 const pageDataTestRev = 998092778
+const pageDataTestWikitext = "...wikitext goes here..."
+const pageDataTestRedirectsPageID = 903711
+const pageDataTestRedirectsTitle = "Super Ninja"
+const pageDataTestRedirectsNs = 2
+const pageDataTestTemplatesTitle = "Template:Katana"
+const pageDataTestTemplatesNs = 10
+const pageDataTestWbEntityUsageQID = "P569"
+const pageDataTestWbEntityUsageAspect = "O"
+const pageDataTestCategoriesTitle = "Category:Japan"
+const pageDataTestCategoriesNs = 14
 const pageDataTestBdy = `{
 	"batchcomplete": true,
 	"query": {
@@ -40,6 +50,36 @@ const pageDataTestBdy = `{
 							"touched": "2021-01-05T07:56:19Z",
 							"lastrevid": %d,
 							"length": 263051,
+							"redirects": [
+									{
+											"pageid": %d,
+											"ns": %d,
+											"title": "%s"
+									}
+							],
+							"templates": [
+									{
+											"ns": %d,
+											"title": "%s"
+									}
+							],
+							"wbentityusage": {
+									"%s": {
+											"aspects": [
+													"%s",
+													"D.en",
+													"O",
+													"S",
+													"T"
+											]
+									}
+								},
+							"categories": [
+								{
+									"ns": %d,
+									"title": "%s"
+								}
+							],
 							"revisions": [
 									{
 											"revid": 998092778,
@@ -47,7 +87,14 @@ const pageDataTestBdy = `{
 											"minor": false,
 											"user": "Politicsfan4",
 											"timestamp": "2021-01-03T19:49:57Z",
-											"comment": "Reverted 1 pending edit by [[Special:Contributions/174.246.137.154|174.246.137.154]] to revision 997918021 by Maxeto0910"
+											"comment": "Reverted 1 pending edit by [[Special:Contributions]] to revision 997918021",
+											"slots": {
+												"main": {
+														"contentmodel": "wikitext",
+														"contentformat": "text/x-wiki",
+														"content": "%s"
+												}
+											}
 									}
 							]
 					},
@@ -69,7 +116,7 @@ const pageDataTestBdy = `{
 										"minor": false,
 										"user": "Politicsfan4",
 										"timestamp": "2021-01-03T19:49:57Z",
-										"comment": "Reverted 1 pending edit by [[Special:Contributions/174.246.137.154|174.246.137.154]] to revision 997918021 by Maxeto0910"
+										"comment": "Reverted 1 pending edit by [[Special:Contributions]] to revision 997918021"
 								}
 						]
 					},
@@ -95,6 +142,16 @@ func createPageDataServer() http.Handler {
 			pageDataTestTitle,
 			pageDataTestQID,
 			pageDataTestRev,
+			pageDataTestRedirectsPageID,
+			pageDataTestRedirectsNs,
+			pageDataTestRedirectsTitle,
+			pageDataTestTemplatesNs,
+			pageDataTestTemplatesTitle,
+			pageDataTestWbEntityUsageQID,
+			pageDataTestWbEntityUsageAspect,
+			pageDataTestCategoriesNs,
+			pageDataTestCategoriesTitle,
+			pageDataTestWikitext,
 			pageDataTestMissingTitle)))
 	})
 
@@ -102,6 +159,7 @@ func createPageDataServer() http.Handler {
 }
 
 func TestPageData(t *testing.T) {
+	assert := assert.New(t)
 	srv := httptest.NewServer(createPageDataServer())
 	defer srv.Close()
 
@@ -109,13 +167,24 @@ func TestPageData(t *testing.T) {
 	client.options.PageDataURL = pageDataTestURL
 
 	pages, err := client.PagesData(context.Background(), pageDataTestTitle, pageDataTestRedirectTitle, pageDataTestMissingTitle)
-	assert.NoError(t, err)
-	assert.NotContains(t, pages, pageDataTestMissingTitle)
-	assert.NotContains(t, pages, pageDataTestRedirectTitle)
+	assert.NoError(err)
+	assert.NotContains(pages, pageDataTestMissingTitle)
+	assert.NotContains(pages, pageDataTestRedirectTitle)
 
 	for title, page := range pages {
-		assert.Equal(t, pageDataTestTitle, title)
-		assert.Equal(t, pageDataTestQID, page.Pageprops.WikibaseItem)
-		assert.Equal(t, pageDataTestRev, page.LastRevID)
+		assert.Equal(pageDataTestTitle, title)
+		assert.Equal(pageDataTestQID, page.Pageprops.WikibaseItem)
+		assert.Equal(pageDataTestRev, page.LastRevID)
+		assert.Equal(pageDataTestWikitext, page.Revisions[0].Slots.Main.Content)
+		assert.Equal(pageDataTestRedirectsPageID, page.Redirects[0].PageID)
+		assert.Equal(pageDataTestRedirectsNs, page.Redirects[0].Ns)
+		assert.Equal(pageDataTestRedirectsTitle, page.Redirects[0].Title)
+		assert.Equal(pageDataTestTemplatesTitle, page.Templates[0].Title)
+		assert.Equal(pageDataTestTemplatesNs, page.Templates[0].Ns)
+		assert.Contains(page.WbEntityUsage, pageDataTestWbEntityUsageQID)
+		assert.NotEmpty(page.WbEntityUsage[pageDataTestWbEntityUsageQID].Aspects)
+		assert.Contains(page.WbEntityUsage[pageDataTestWbEntityUsageQID].Aspects, pageDataTestWbEntityUsageAspect)
+		assert.Equal(pageDataTestCategoriesTitle, page.Categories[0].Title)
+		assert.Equal(pageDataTestCategoriesNs, page.Categories[0].Ns)
 	}
 }
