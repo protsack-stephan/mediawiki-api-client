@@ -4,6 +4,36 @@ import "time"
 
 const pageDataURL = "/w/api.php"
 
+// PageDataRevision revision data for pages data response
+type PageDataRevision struct {
+	RevID     int       `json:"revid"`
+	ParentID  int       `json:"parentid"`
+	User      string    `json:"user"`
+	Timestamp time.Time `json:"timestamp"`
+	Slots     struct {
+		Main struct {
+			Contentmodel  string `json:"contentmodel"`
+			Contentformat string `json:"contentformat"`
+			Content       string `json:"content"`
+		} `json:"main"`
+	} `json:"slots"`
+	Comment    string   `json:"comment"`
+	Tags       []string `json:"tags"`
+	Oresscores struct {
+		Articlequality struct {
+			Stub float64 `json:"Stub"`
+		} `json:"articlequality"`
+		Damaging struct {
+			True  float64 `json:"true"`
+			False float64 `json:"false"`
+		} `json:"damaging"`
+		Goodfaith struct {
+			True  float64 `json:"true"`
+			False float64 `json:"false"`
+		} `json:"goodfaith"`
+	} `json:"oresscores"`
+}
+
 // PageData page data returned from actions API
 type PageData struct {
 	PageID               int       `json:"pageid"`
@@ -31,34 +61,7 @@ type PageData struct {
 		Ns    int    `json:"ns"`
 		Title string `json:"title"`
 	} `json:"categories"`
-	Revisions []struct {
-		RevID     int       `json:"revid"`
-		ParentID  int       `json:"parentid"`
-		User      string    `json:"user"`
-		Timestamp time.Time `json:"timestamp"`
-		Slots     struct {
-			Main struct {
-				Contentmodel  string `json:"contentmodel"`
-				Contentformat string `json:"contentformat"`
-				Content       string `json:"content"`
-			} `json:"main"`
-		} `json:"slots"`
-		Comment    string   `json:"comment"`
-		Tags       []string `json:"tags"`
-		Oresscores struct {
-			Articlequality struct {
-				Stub float64 `json:"Stub"`
-			} `json:"articlequality"`
-			Damaging struct {
-				True  float64 `json:"true"`
-				False float64 `json:"false"`
-			} `json:"damaging"`
-			Goodfaith struct {
-				True  float64 `json:"true"`
-				False float64 `json:"false"`
-			} `json:"goodfaith"`
-		} `json:"oresscores"`
-	} `json:"revisions"`
+	Revisions []PageDataRevision `json:"revisions"`
 	Templates []struct {
 		Ns    int    `json:"ns"`
 		Title string `json:"title"`
