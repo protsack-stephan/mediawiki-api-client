@@ -4,6 +4,21 @@ import "time"
 
 const pageDataURL = "/w/api.php"
 
+// PageDataOresScores representation of ORES scores
+type PageDataOresScores struct {
+	Articlequality struct {
+		Stub float64 `json:"Stub"`
+	} `json:"articlequality"`
+	Damaging struct {
+		True  float64 `json:"true"`
+		False float64 `json:"false"`
+	} `json:"damaging"`
+	Goodfaith struct {
+		True  float64 `json:"true"`
+		False float64 `json:"false"`
+	} `json:"goodfaith"`
+}
+
 // PageDataRevision revision data for pages data response
 type PageDataRevision struct {
 	RevID     int       `json:"revid"`
@@ -17,21 +32,9 @@ type PageDataRevision struct {
 			Content       string `json:"content"`
 		} `json:"main"`
 	} `json:"slots"`
-	Comment    string   `json:"comment"`
-	Tags       []string `json:"tags"`
-	Oresscores struct {
-		Articlequality struct {
-			Stub float64 `json:"Stub"`
-		} `json:"articlequality"`
-		Damaging struct {
-			True  float64 `json:"true"`
-			False float64 `json:"false"`
-		} `json:"damaging"`
-		Goodfaith struct {
-			True  float64 `json:"true"`
-			False float64 `json:"false"`
-		} `json:"goodfaith"`
-	} `json:"oresscores"`
+	Comment    string      `json:"comment"`
+	Tags       []string    `json:"tags"`
+	Oresscores interface{} `json:"oresscores"`
 }
 
 // PageData page data returned from actions API
