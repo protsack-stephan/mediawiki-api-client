@@ -73,8 +73,8 @@ func (cl *Client) PagesData(ctx context.Context, titles ...string) (map[string]P
 	res := new(pageDataResponse)
 	body := url.Values{
 		"action":        []string{"query"},
-		"prop":          []string{"info|categories|revisions|templates|wbentityusage|pageprops|redirects"},
-		"rvprop":        []string{"comment|oresscores|content|ids|timestamp|tags|user"},
+		"prop":          []string{"info|categories|revisions|templates|wbentityusage|pageprops|redirects|flagged"},
+		"rvprop":        []string{"comment|oresscores|content|ids|timestamp|tags|user|flags"},
 		"rvslots":       []string{"main"},
 		"inprop":        []string{"displaytitle|protection|url"},
 		"ppprop":        []string{"wikibase_item"},

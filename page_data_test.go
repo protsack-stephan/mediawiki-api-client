@@ -16,6 +16,7 @@ const pageDataTestRedirectTitle = "Redirect"
 const pageDataTestMissingTitle = "NotThere"
 const pageDataTestQID = "Q90"
 const pageDataTestRev = 998092778
+const pageDataStableRev = 998092771
 const pageDataTestWikitext = "...wikitext goes here..."
 const pageDataTestRedirectsPageID = 903711
 const pageDataTestRedirectsTitle = "Super Ninja"
@@ -96,7 +97,13 @@ const pageDataTestBdy = `{
 												}
 											}
 									}
-							]
+							],
+							"flagged": {
+								"stable_revid": %d,
+								"level": 0,
+								"level_text": "stable",
+								"pending_since": "2021-03-04T11:38:22Z"
+							}
 					},
 					{
 						"pageid": 22989,
@@ -152,6 +159,7 @@ func createPageDataServer() http.Handler {
 			pageDataTestCategoriesNs,
 			pageDataTestCategoriesTitle,
 			pageDataTestWikitext,
+			pageDataStableRev,
 			pageDataTestMissingTitle)))
 	})
 
@@ -186,5 +194,6 @@ func TestPageData(t *testing.T) {
 		assert.Contains(page.WbEntityUsage[pageDataTestWbEntityUsageQID].Aspects, pageDataTestWbEntityUsageAspect)
 		assert.Equal(pageDataTestCategoriesTitle, page.Categories[0].Title)
 		assert.Equal(pageDataTestCategoriesNs, page.Categories[0].Ns)
+		assert.Equal(pageDataStableRev, page.Flagged.StableRevID)
 	}
 }
