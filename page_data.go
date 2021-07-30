@@ -24,6 +24,7 @@ type PageDataRevision struct {
 	RevID     int       `json:"revid"`
 	ParentID  int       `json:"parentid"`
 	User      string    `json:"user"`
+	Minor     bool      `json:"minor"`
 	Timestamp time.Time `json:"timestamp"`
 	Slots     struct {
 		Main struct {
@@ -80,6 +81,12 @@ type PageData struct {
 		Ns     int    `json:"ns"`
 		Title  string `json:"title"`
 	} `json:"redirects"`
+	Flagged struct {
+		StableRevID  int       `json:"stable_revid"`
+		Level        int       `json:"level"`
+		LevelText    string    `json:"level_text"`
+		PendingSince time.Time `json:"pending_since"`
+	} `json:"flagged"`
 }
 
 type pageDataResponse struct {
