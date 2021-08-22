@@ -70,7 +70,15 @@ func main() {
 
 	fmt.Println(string(wikitext))
 
-	pdata, err := client.PageData(ctx, "barack_Obama")
+	psdata, err := client.PagesData(ctx, "Barack_Obama", "Earth")
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	fmt.Println(psdata)
+
+	pdata, err := client.PageData(ctx, "Barack_Obama")
 
 	if err != nil {
 		log.Panic(err)
