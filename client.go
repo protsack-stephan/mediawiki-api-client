@@ -1,3 +1,4 @@
+// Package mediawiki API client for accessing actions API and REST base.
 package mediawiki
 
 import (
@@ -11,8 +12,14 @@ import (
 	"strings"
 )
 
-// ErrEmptyResult not items in result list
+// ErrEmptyResult no items in result list.
 var ErrEmptyResult = errors.New("empty response result")
+
+// ErrPageNotFound page not found in the api.
+var ErrPageNotFound = errors.New("page not found")
+
+// ErrUserNotFound user was not found.
+var ErrUserNotFound = errors.New("user not found")
 
 const errBadRequestMsg = "status: '%d' body: '%s'"
 
@@ -29,18 +36,19 @@ func NewClient(url string) *Client {
 			sitematrixURL,
 			namespacesURL,
 			pageDataURL,
+			userURL,
 		},
 	}
 }
 
-// Client wikimedia api client
+// Client wikimedia api client.
 type Client struct {
 	url        string
 	httpClient *http.Client
 	options    *Options
 }
 
-// PageMeta get page meta data
+// PageMeta get page meta data.
 func (cl *Client) PageMeta(ctx context.Context, title string) (*PageMeta, error) {
 	meta := new(PageMeta)
 	data, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+cl.options.PageMetaURL+url.QueryEscape(title), nil)
@@ -67,14 +75,14 @@ func (cl *Client) PageMeta(ctx context.Context, title string) (*PageMeta, error)
 	return &res.Items[0], nil
 }
 
-// PagesData get page data from Actions API
+// PagesData get page data from Actions API.
 func (cl *Client) PagesData(ctx context.Context, titles ...string) (map[string]PageData, error) {
 	pages := make(map[string]PageData)
 	res := new(pageDataResponse)
 	body := url.Values{
 		"action":        []string{"query"},
 		"prop":          []string{"info|categories|revisions|templates|wbentityusage|pageprops|redirects|flagged"},
-		"rvprop":        []string{"comment|oresscores|content|ids|timestamp|tags|user|flags"},
+		"rvprop":        []string{"comment|oresscores|content|ids|timestamp|tags|user|userid|flags"},
 		"rvslots":       []string{"main"},
 		"inprop":        []string{"displaytitle|protection|url"},
 		"ppprop":        []string{"wikibase_item"},
@@ -133,7 +141,22 @@ func (cl *Client) PagesData(ctx context.Context, titles ...string) (map[string]P
 	return pages, nil
 }
 
-// PageHTML get page html with with or without revision
+// PageData get page data from Actions API.
+func (cl *Client) PageData(ctx context.Context, title string) (PageData, error) {
+	resp, err := cl.PagesData(ctx, title)
+
+	if err != nil {
+		return resp[title], err
+	}
+
+	if data, ok := resp[title]; ok {
+		return data, nil
+	}
+
+	return resp[title], ErrPageNotFound
+}
+
+// PageHTML get page html with with or without revision.
 func (cl *Client) PageHTML(ctx context.Context, title string, rev ...int) ([]byte, error) {
 	url := cl.url + cl.options.PageHTMLURL + url.QueryEscape(title)
 
@@ -154,7 +177,7 @@ func (cl *Client) PageHTML(ctx context.Context, title string, rev ...int) ([]byt
 	return data, nil
 }
 
-// PageWikitext get page wikitext with or without revision
+// PageWikitext get page wikitext with or without revision.
 func (cl *Client) PageWikitext(ctx context.Context, title string, rev ...int) ([]byte, error) {
 	url := cl.url + fmt.Sprintf(cl.options.PageWikitextURL, url.QueryEscape(title))
 
@@ -186,7 +209,7 @@ func (cl *Client) PageWikitext(ctx context.Context, title string, rev ...int) ([
 	return []byte(res.Query.Pages[0].Revisions[0].Slots.Main.Content), err
 }
 
-// PageRevisions get list of page revisions
+// PageRevisions get list of page revisions.
 func (cl *Client) PageRevisions(ctx context.Context, title string, limit int) ([]Revision, error) {
 	revs := []Revision{}
 	data, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+fmt.Sprintf(cl.options.PageRevisionsURL, limit, url.QueryEscape(title)), nil)
@@ -213,7 +236,7 @@ func (cl *Client) PageRevisions(ctx context.Context, title string, limit int) ([
 	return res.Query.Pages[0].Revisions, nil
 }
 
-// Sitematrix get all supported wikimedia projects
+// Sitematrix get all supported wikimedia projects.
 func (cl *Client) Sitematrix(ctx context.Context) (*Sitematrix, error) {
 	matrix := new(Sitematrix)
 	data, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+cl.options.SitematrixURL, nil)
@@ -246,7 +269,7 @@ func (cl *Client) Sitematrix(ctx context.Context) (*Sitematrix, error) {
 	return matrix, nil
 }
 
-// Namespaces get page types called "namespaces"
+// Namespaces get page types called "namespaces".
 func (cl *Client) Namespaces(ctx context.Context) ([]Namespace, error) {
 	ns := []Namespace{}
 	data, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+cl.options.NamespacesURL, nil)
@@ -271,4 +294,71 @@ func (cl *Client) Namespaces(ctx context.Context) ([]Namespace, error) {
 	}
 
 	return ns, nil
+}
+
+// Users get list of users by id.
+func (cl *Client) Users(ctx context.Context, ids ...int) (map[int]User, error) {
+	ususerids := []string{}
+
+	for _, id := range ids {
+		ususerids = append(ususerids, strconv.Itoa(id))
+	}
+
+	body := url.Values{
+		"action":        []string{"query"},
+		"list":          []string{"users"},
+		"usprop":        []string{"groups|editcount|groupmemberships|registration|emailable"},
+		"format":        []string{"json"},
+		"formatversion": []string{"2"},
+		"ususerids":     []string{strings.Join(ususerids, "|")},
+	}
+
+	data, status, err := req(
+		ctx,
+		cl.httpClient,
+		http.MethodPost,
+		fmt.Sprintf("%s%s", cl.url, cl.options.UserURL),
+		strings.NewReader(body.Encode()),
+		map[string]string{
+			"Content-Type": "application/x-www-form-urlencoded",
+		})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if status != http.StatusOK {
+		return nil, fmt.Errorf(errBadRequestMsg, status, data)
+	}
+
+	res := new(userResponse)
+
+	if err := json.Unmarshal(data, res); err != nil {
+		return nil, err
+	}
+
+	users := make(map[int]User)
+
+	for _, user := range res.Query.Users {
+		if !user.Missing {
+			users[user.UserID] = user
+		}
+	}
+
+	return users, nil
+}
+
+// Users get single user by id.
+func (cl *Client) User(ctx context.Context, id int) (User, error) {
+	users, err := cl.Users(ctx, id)
+
+	if err != nil {
+		return users[id], err
+	}
+
+	if data, ok := users[id]; ok {
+		return data, nil
+	}
+
+	return users[id], ErrUserNotFound
 }

@@ -9,4 +9,5 @@ type Options struct {
 	SitematrixURL    string
 	NamespacesURL    string
 	PageDataURL      string
+	UserURL          string
 }

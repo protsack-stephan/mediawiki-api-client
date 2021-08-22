@@ -24,6 +24,7 @@ type PageDataRevision struct {
 	RevID     int       `json:"revid"`
 	ParentID  int       `json:"parentid"`
 	User      string    `json:"user"`
+	UserID    int       `json:"userid"`
 	Minor     bool      `json:"minor"`
 	Timestamp time.Time `json:"timestamp"`
 	Slots     struct {
