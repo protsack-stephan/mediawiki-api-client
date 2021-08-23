@@ -70,11 +70,35 @@ func main() {
 
 	fmt.Println(string(wikitext))
 
-	pdata, err := client.PagesData(ctx, "Barack_Obama")
+	psdata, err := client.PagesData(ctx, "Barack_Obama", "Earth")
 
 	if err != nil {
 		log.Panic(err)
 	}
 
-	fmt.Println(pdata["Barack_Obama"])
+	fmt.Println(psdata)
+
+	pdata, err := client.PageData(ctx, "Barack_Obama")
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	fmt.Println(pdata)
+
+	users, err := client.Users(ctx, pdata.Revisions[0].UserID, 3333333)
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	fmt.Println(users)
+
+	user, err := client.User(ctx, pdata.Revisions[0].UserID)
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	fmt.Println(user)
 }

@@ -27,6 +27,7 @@ const pageDataTestWbEntityUsageQID = "P569"
 const pageDataTestWbEntityUsageAspect = "O"
 const pageDataTestCategoriesTitle = "Category:Japan"
 const pageDataTestCategoriesNs = 14
+const pageDataTestUserID = 111
 const pageDataTestBdy = `{
 	"batchcomplete": true,
 	"query": {
@@ -87,6 +88,7 @@ const pageDataTestBdy = `{
 											"parentid": 998092404,
 											"minor": false,
 											"user": "Politicsfan4",
+											"userid": %d,
 											"timestamp": "2021-01-03T19:49:57Z",
 											"comment": "Reverted 1 pending edit by [[Special:Contributions]] to revision 997918021",
 											"slots": {
@@ -122,6 +124,7 @@ const pageDataTestBdy = `{
 										"parentid": 998092404,
 										"minor": false,
 										"user": "Politicsfan4",
+										"userid": %d,
 										"timestamp": "2021-01-03T19:49:57Z",
 										"comment": "Reverted 1 pending edit by [[Special:Contributions]] to revision 997918021"
 								}
@@ -158,42 +161,58 @@ func createPageDataServer() http.Handler {
 			pageDataTestWbEntityUsageAspect,
 			pageDataTestCategoriesNs,
 			pageDataTestCategoriesTitle,
+			pageDataTestUserID,
 			pageDataTestWikitext,
 			pageDataStableRev,
+			pageDataTestUserID,
 			pageDataTestMissingTitle)))
 	})
 
 	return router
 }
 
+func assertPage(assert *assert.Assertions, page PageData) {
+	assert.Equal(pageDataTestTitle, page.Title)
+	assert.Equal(pageDataTestQID, page.Pageprops.WikibaseItem)
+	assert.Equal(pageDataTestRev, page.LastRevID)
+	assert.Equal(pageDataTestWikitext, page.Revisions[0].Slots.Main.Content)
+	assert.Equal(pageDataTestRedirectsPageID, page.Redirects[0].PageID)
+	assert.Equal(pageDataTestRedirectsNs, page.Redirects[0].Ns)
+	assert.Equal(pageDataTestRedirectsTitle, page.Redirects[0].Title)
+	assert.Equal(pageDataTestTemplatesTitle, page.Templates[0].Title)
+	assert.Equal(pageDataTestTemplatesNs, page.Templates[0].Ns)
+	assert.Contains(page.WbEntityUsage, pageDataTestWbEntityUsageQID)
+	assert.NotEmpty(page.WbEntityUsage[pageDataTestWbEntityUsageQID].Aspects)
+	assert.Contains(page.WbEntityUsage[pageDataTestWbEntityUsageQID].Aspects, pageDataTestWbEntityUsageAspect)
+	assert.Equal(pageDataTestCategoriesTitle, page.Categories[0].Title)
+	assert.Equal(pageDataTestCategoriesNs, page.Categories[0].Ns)
+	assert.Equal(pageDataStableRev, page.Flagged.StableRevID)
+}
+
 func TestPageData(t *testing.T) {
 	assert := assert.New(t)
+	ctx := context.Background()
 	srv := httptest.NewServer(createPageDataServer())
 	defer srv.Close()
 
 	client := NewClient(srv.URL)
 	client.options.PageDataURL = pageDataTestURL
 
-	pages, err := client.PagesData(context.Background(), pageDataTestTitle, pageDataTestRedirectTitle, pageDataTestMissingTitle)
+	pages, err := client.PagesData(ctx, pageDataTestTitle, pageDataTestRedirectTitle, pageDataTestMissingTitle)
 	assert.NoError(err)
+	assert.Contains(pages, pageDataTestTitle)
 	assert.NotContains(pages, pageDataTestMissingTitle)
 	assert.NotContains(pages, pageDataTestRedirectTitle)
 
 	for title, page := range pages {
 		assert.Equal(pageDataTestTitle, title)
-		assert.Equal(pageDataTestQID, page.Pageprops.WikibaseItem)
-		assert.Equal(pageDataTestRev, page.LastRevID)
-		assert.Equal(pageDataTestWikitext, page.Revisions[0].Slots.Main.Content)
-		assert.Equal(pageDataTestRedirectsPageID, page.Redirects[0].PageID)
-		assert.Equal(pageDataTestRedirectsNs, page.Redirects[0].Ns)
-		assert.Equal(pageDataTestRedirectsTitle, page.Redirects[0].Title)
-		assert.Equal(pageDataTestTemplatesTitle, page.Templates[0].Title)
-		assert.Equal(pageDataTestTemplatesNs, page.Templates[0].Ns)
-		assert.Contains(page.WbEntityUsage, pageDataTestWbEntityUsageQID)
-		assert.NotEmpty(page.WbEntityUsage[pageDataTestWbEntityUsageQID].Aspects)
-		assert.Contains(page.WbEntityUsage[pageDataTestWbEntityUsageQID].Aspects, pageDataTestWbEntityUsageAspect)
-		assert.Equal(pageDataTestCategoriesTitle, page.Categories[0].Title)
-		assert.Equal(pageDataTestCategoriesNs, page.Categories[0].Ns)
-		assert.Equal(pageDataStableRev, page.Flagged.StableRevID)
+		assertPage(assert, page)
 	}
+
+	_, err = client.PageData(ctx, pageDataTestMissingTitle)
+	assert.Equal(ErrPageNotFound, err)
+
+	page, err := client.PageData(ctx, pageDataTestTitle)
+	assert.NoError(err)
+	assertPage(assert, page)
 }
