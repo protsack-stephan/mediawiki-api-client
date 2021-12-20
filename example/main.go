@@ -28,7 +28,7 @@ func main() {
 
 	fmt.Println(string(data))
 
-	revisions, err := client.PageRevisions(ctx, "Pet_door", 10)
+	revisions, err := client.PageRevisions(ctx, "Pet_door", 10, mediawiki.RevisionOrderingOlder)
 
 	if err != nil {
 		log.Panic(err)
