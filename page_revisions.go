@@ -2,7 +2,7 @@ package mediawiki
 
 import "time"
 
-const revisionsURL = "/w/api.php?action=query&format=json&prop=revisions&rvlimit=%d&formatversion=2&titles=%s"
+const revisionsURL = "/w/api.php?action=query&format=json&prop=revisions&rvlimit=%d&rvdir=%s&formatversion=2&titles=%s"
 
 // Revision page revision schema
 type Revision struct {
@@ -14,6 +14,16 @@ type Revision struct {
 	Comment   string    `json:"comment"`
 	Anon      bool      `json:"anon,omitempty"`
 }
+
+// RevisionOrdering specifies the direction to enumerate the revisions list
+type RevisionOrdering string
+
+const (
+	// RevisionOrderingOlder lists newest revision first (default)
+	RevisionOrderingOlder RevisionOrdering = "older"
+	// RevisionOrderingNewer lists oldest revision first
+	RevisionOrderingNewer RevisionOrdering = "newer"
+)
 
 type revisionsResponse struct {
 	Batchcomplete bool                         `json:"batchcomplete"`
