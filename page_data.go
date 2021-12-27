@@ -97,6 +97,7 @@ type PageData struct {
 	PageID               int                    `json:"pageid"`
 	Ns                   int                    `json:"ns"`
 	Title                string                 `json:"title"`
+	Watchers             int                    `json:"watchers"`
 	ContentModel         string                 `json:"contentmodel"`
 	PageLanguage         string                 `json:"pagelanguage"`
 	PageLanguageHTMLCode string                 `json:"pagelanguagehtmlcode"`

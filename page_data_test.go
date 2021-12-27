@@ -28,6 +28,7 @@ const pageDataTestWbEntityUsageAspect = "O"
 const pageDataTestCategoriesTitle = "Category:Japan"
 const pageDataTestCategoriesNs = 14
 const pageDataTestUserID = 111
+const pageDataTestWatchers = 11
 const pageDataTestBdy = `{
 	"batchcomplete": true,
 	"query": {
@@ -42,6 +43,7 @@ const pageDataTestBdy = `{
 							"pageid": 22989,
 							"ns": 0,
 							"title": "%s",
+							"watchers": %d,
 							"pageprops": {
 									"wikibase_item": "%s"
 							},
@@ -111,6 +113,7 @@ const pageDataTestBdy = `{
 						"pageid": 22989,
 						"ns": 0,
 						"title": "Redirect-1",
+						"watchers": 128,
 						"contentmodel": "wikitext",
 						"pagelanguage": "en",
 						"pagelanguagehtmlcode": "en",
@@ -133,6 +136,7 @@ const pageDataTestBdy = `{
 					{
 						"ns": 0,
 						"title": "%s",
+						"watchers": 256,
 						"missing": true,
 						"contentmodel": "wikitext",
 						"pagelanguage": "af",
@@ -150,6 +154,7 @@ func createPageDataServer() http.Handler {
 		_, _ = w.Write([]byte(fmt.Sprintf(
 			pageDataTestBdy,
 			pageDataTestTitle,
+			pageDataTestWatchers,
 			pageDataTestQID,
 			pageDataTestRev,
 			pageDataTestRedirectsPageID,
@@ -173,6 +178,7 @@ func createPageDataServer() http.Handler {
 
 func assertPage(assert *assert.Assertions, page PageData) {
 	assert.Equal(pageDataTestTitle, page.Title)
+	assert.Equal(pageDataTestWatchers, page.Watchers)
 	assert.Equal(pageDataTestQID, page.Pageprops.WikibaseItem)
 	assert.Equal(pageDataTestRev, page.LastRevID)
 	assert.Equal(pageDataTestWikitext, page.Revisions[0].Slots.Main.Content)
