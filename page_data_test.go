@@ -43,7 +43,7 @@ const pageDataTestBdy = `{
 							"pageid": 22989,
 							"ns": 0,
 							"title": "%s",
-							"watchers": 11,
+							"watchers": %d,
 							"pageprops": {
 									"wikibase_item": "%s"
 							},
@@ -113,7 +113,7 @@ const pageDataTestBdy = `{
 						"pageid": 22989,
 						"ns": 0,
 						"title": "Redirect-1",
-						"watchers": 11,
+						"watchers": 128,
 						"contentmodel": "wikitext",
 						"pagelanguage": "en",
 						"pagelanguagehtmlcode": "en",
@@ -136,7 +136,7 @@ const pageDataTestBdy = `{
 					{
 						"ns": 0,
 						"title": "%s",
-						"watchers": 11,
+						"watchers": 256,
 						"missing": true,
 						"contentmodel": "wikitext",
 						"pagelanguage": "af",
@@ -154,6 +154,7 @@ func createPageDataServer() http.Handler {
 		_, _ = w.Write([]byte(fmt.Sprintf(
 			pageDataTestBdy,
 			pageDataTestTitle,
+			pageDataTestWatchers,
 			pageDataTestQID,
 			pageDataTestRev,
 			pageDataTestRedirectsPageID,
