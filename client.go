@@ -84,7 +84,7 @@ func (cl *Client) PagesData(ctx context.Context, titles ...string) (map[string]P
 		"prop":          []string{"info|categories|revisions|templates|wbentityusage|pageprops|redirects|flagged"},
 		"rvprop":        []string{"comment|oresscores|content|ids|timestamp|tags|user|userid|flags"},
 		"rvslots":       []string{"main"},
-		"inprop":        []string{"displaytitle|protection|url"},
+		"inprop":        []string{"displaytitle|protection|url|watchers"},
 		"ppprop":        []string{"wikibase_item"},
 		"redirects":     []string{"1"},
 		"titles":        []string{strings.Join(titles, "|")},
@@ -156,7 +156,7 @@ func (cl *Client) PageData(ctx context.Context, title string) (PageData, error) 
 	return resp[title], ErrPageNotFound
 }
 
-// PageHTML get page html with with or without revision.
+// PageHTML get page html with or without revision.
 func (cl *Client) PageHTML(ctx context.Context, title string, rev ...int) ([]byte, error) {
 	url := cl.url + cl.options.PageHTMLURL + url.QueryEscape(title)
 
