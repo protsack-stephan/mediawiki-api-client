@@ -15,7 +15,6 @@ import (
 var pageRevisionsTestIDS = []int{944917628, 944912305}
 
 const (
-	pageRevisionsTestURL   = "/revisions/%d/%s/%s/%s"
 	pageRevisionsTestTitle = "test"
 	pageRevisionsTestLimit = 2
 	pageRevisionsTestOrder = RevisionOrderingNewer
