@@ -210,15 +210,23 @@ func (cl *Client) PageWikitext(ctx context.Context, title string, rev ...int) ([
 }
 
 // PageRevisions get list of page revisions.
-func (cl *Client) PageRevisions(ctx context.Context, title string, limit int, order ...RevisionOrdering) ([]Revision, error) {
+func (cl *Client) PageRevisions(ctx context.Context, title string, limit int, options ...PageRevisionsOptions) ([]Revision, error) {
+	var props []string
 	revs := []Revision{}
-
 	ordering := RevisionOrderingOlder
-	if len(order) > 0 {
-		ordering = order[0]
+
+	if len(options) > 0 {
+		opt := options[0]
+		ordering = opt.Order
+		props = opt.Props
 	}
 
-	data, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+fmt.Sprintf(cl.options.PageRevisionsURL, limit, ordering, url.QueryEscape(title)), nil)
+	reqURL := cl.url + fmt.Sprintf(cl.options.PageRevisionsURL, limit, ordering, url.QueryEscape(title))
+	if len(props) > 0 {
+		reqURL += fmt.Sprintf("&rvprop=%s", url.QueryEscape(strings.Join(props, "|")))
+	}
+
+	data, status, err := req(ctx, cl.httpClient, http.MethodGet, reqURL, nil)
 
 	if err != nil {
 		return revs, err
