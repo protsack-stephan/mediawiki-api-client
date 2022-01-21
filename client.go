@@ -221,11 +221,21 @@ func (cl *Client) PageRevisions(ctx context.Context, title string, limit int, op
 		props = opt.Props
 	}
 
-	reqURL := cl.url + fmt.Sprintf(cl.options.PageRevisionsURL, limit, ordering, url.QueryEscape(title))
-	if len(props) > 0 {
-		reqURL += fmt.Sprintf("&rvprop=%s", url.QueryEscape(strings.Join(props, "|")))
+	body := url.Values{
+		"action":        []string{"query"},
+		"format":        []string{"json"},
+		"formatversion": []string{"2"},
+		"prop":          []string{"revisions"},
+		"titles":        []string{url.QueryEscape(title)},
+		"rvlimit":       []string{strconv.Itoa(limit)},
+		"rvdir":         []string{string(ordering)},
 	}
 
+	if len(props) > 0 {
+		body["rvprop"] = []string{strings.Join(props, "|")}
+	}
+
+	reqURL := cl.url + cl.options.PageRevisionsURL + body.Encode()
 	data, status, err := req(ctx, cl.httpClient, http.MethodGet, reqURL, nil)
 
 	if err != nil {
