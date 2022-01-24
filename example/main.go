@@ -75,7 +75,10 @@ func main() {
 
 	fmt.Println(string(wikitext))
 
-	psdata, err := client.PagesData(ctx, "Barack_Obama", "Earth")
+	psdata, err := client.PagesData(ctx, []string{"Barack_Obama", "Earth"}, mediawiki.PageDataOptions{
+		RevisionsLimit: 2,
+		RevisionProps:  []string{"ids", "timestamp", "content", "sha1"},
+	})
 
 	if err != nil {
 		log.Panic(err)

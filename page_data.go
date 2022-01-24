@@ -4,6 +4,11 @@ import "time"
 
 const pageDataURL = "/w/api.php"
 
+type PageDataOptions struct {
+	RevisionsLimit int
+	RevisionProps  []string
+}
+
 // PageDataOresScore representation for ORES score
 type PageDataOresScore struct {
 	True  float64 `json:"true"`

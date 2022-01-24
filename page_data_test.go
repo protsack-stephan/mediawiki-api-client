@@ -204,7 +204,7 @@ func TestPageData(t *testing.T) {
 	client := NewClient(srv.URL)
 	client.options.PageDataURL = pageDataTestURL
 
-	pages, err := client.PagesData(ctx, pageDataTestTitle, pageDataTestRedirectTitle, pageDataTestMissingTitle)
+	pages, err := client.PagesData(ctx, []string{pageDataTestTitle, pageDataTestRedirectTitle, pageDataTestMissingTitle})
 	assert.NoError(err)
 	assert.Contains(pages, pageDataTestTitle)
 	assert.NotContains(pages, pageDataTestMissingTitle)
