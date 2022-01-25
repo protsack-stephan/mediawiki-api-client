@@ -76,9 +76,17 @@ func (cl *Client) PageMeta(ctx context.Context, title string) (*PageMeta, error)
 }
 
 // PagesData get page data from Actions API.
-func (cl *Client) PagesData(ctx context.Context, titles ...string) (map[string]PageData, error) {
+func (cl *Client) PagesData(ctx context.Context, titles []string, options ...PageDataOptions) (map[string]PageData, error) {
+	var rvProps []string
+	rvLimit := 1
 	pages := make(map[string]PageData)
 	res := new(pageDataResponse)
+
+	for _, opt := range options {
+		rvLimit = opt.RevisionsLimit
+		rvProps = opt.RevisionProps
+	}
+
 	body := url.Values{
 		"action":        []string{"query"},
 		"prop":          []string{"info|categories|revisions|templates|wbentityusage|pageprops|redirects|flagged"},
@@ -90,6 +98,11 @@ func (cl *Client) PagesData(ctx context.Context, titles ...string) (map[string]P
 		"titles":        []string{strings.Join(titles, "|")},
 		"formatversion": []string{"2"},
 		"format":        []string{"json"},
+		"rvlimit":       []string{fmt.Sprintf("%d", rvLimit)},
+	}
+
+	if len(rvProps) > 0 {
+		body["rvprop"][0] += fmt.Sprintf("|%s", strings.Join(rvProps, "|"))
 	}
 
 	data, status, err := req(
@@ -142,8 +155,8 @@ func (cl *Client) PagesData(ctx context.Context, titles ...string) (map[string]P
 }
 
 // PageData get page data from Actions API.
-func (cl *Client) PageData(ctx context.Context, title string) (PageData, error) {
-	resp, err := cl.PagesData(ctx, title)
+func (cl *Client) PageData(ctx context.Context, title string, options ...PageDataOptions) (PageData, error) {
+	resp, err := cl.PagesData(ctx, []string{title}, options...)
 
 	if err != nil {
 		return resp[title], err
@@ -210,15 +223,32 @@ func (cl *Client) PageWikitext(ctx context.Context, title string, rev ...int) ([
 }
 
 // PageRevisions get list of page revisions.
-func (cl *Client) PageRevisions(ctx context.Context, title string, limit int, order ...RevisionOrdering) ([]Revision, error) {
+func (cl *Client) PageRevisions(ctx context.Context, title string, limit int, options ...PageRevisionsOptions) ([]Revision, error) {
+	var props []string
 	revs := []Revision{}
-
 	ordering := RevisionOrderingOlder
-	if len(order) > 0 {
-		ordering = order[0]
+
+	for _, opt := range options {
+		ordering = opt.Order
+		props = opt.Props
 	}
 
-	data, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+fmt.Sprintf(cl.options.PageRevisionsURL, limit, ordering, url.QueryEscape(title)), nil)
+	body := url.Values{
+		"action":        []string{"query"},
+		"format":        []string{"json"},
+		"formatversion": []string{"2"},
+		"prop":          []string{"revisions"},
+		"titles":        []string{url.QueryEscape(title)},
+		"rvlimit":       []string{strconv.Itoa(limit)},
+		"rvdir":         []string{string(ordering)},
+	}
+
+	if len(props) > 0 {
+		body["rvprop"] = []string{strings.Join(props, "|")}
+	}
+
+	reqURL := cl.url + cl.options.PageRevisionsURL + body.Encode()
+	data, status, err := req(ctx, cl.httpClient, http.MethodGet, reqURL, nil)
 
 	if err != nil {
 		return revs, err

@@ -28,7 +28,12 @@ func main() {
 
 	fmt.Println(string(data))
 
-	revisions, err := client.PageRevisions(ctx, "Pet_door", 10, mediawiki.RevisionOrderingOlder)
+	revisions, err := client.PageRevisions(ctx, "Pet_door", 10,
+		mediawiki.PageRevisionsOptions{
+			Order: mediawiki.RevisionOrderingOlder,
+			Props: []string{"content", "ids", "timestamp"},
+		},
+	)
 
 	if err != nil {
 		log.Panic(err)
@@ -70,7 +75,10 @@ func main() {
 
 	fmt.Println(string(wikitext))
 
-	psdata, err := client.PagesData(ctx, "Barack_Obama", "Earth")
+	psdata, err := client.PagesData(ctx, []string{"Barack_Obama", "Earth"}, mediawiki.PageDataOptions{
+		RevisionsLimit: 2,
+		RevisionProps:  []string{"ids", "timestamp", "content", "sha1"},
+	})
 
 	if err != nil {
 		log.Panic(err)

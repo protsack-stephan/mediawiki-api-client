@@ -2,7 +2,13 @@ package mediawiki
 
 import "time"
 
-const revisionsURL = "/w/api.php?action=query&format=json&prop=revisions&rvlimit=%d&rvdir=%s&formatversion=2&titles=%s"
+const revisionsURL = "/w/api.php?"
+
+// PageRevisionsOptions additional optional parameters for PageRevisions method
+type PageRevisionsOptions struct {
+	Order RevisionOrdering
+	Props []string
+}
 
 // Revision page revision schema
 type Revision struct {
