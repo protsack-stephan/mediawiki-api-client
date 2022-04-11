@@ -35,6 +35,12 @@ func (cb *ClientBuilder) Timeout(timeout time.Duration) *ClientBuilder {
 	return cb
 }
 
+// Headers set http headers.
+func (cb *ClientBuilder) Headers(headers map[string]string) *ClientBuilder {
+	cb.client.headers = headers
+	return cb
+}
+
 // Build create new client instance
 func (cb *ClientBuilder) Build() *Client {
 	return cb.client
