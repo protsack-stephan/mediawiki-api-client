@@ -18,6 +18,8 @@ const builderTestNamespacesURL = "/namespaces"
 const builderTestPageRevisionsURL = "/revisions"
 const builderTestPagesDataURL = "/pages-data"
 const builderTestUserURL = "/users"
+const builderTestHeaderName = "User-Agent"
+const builderTestHeaderValue = "test@test.com"
 
 func TestBuilder(t *testing.T) {
 	builder := NewBuilder(builderTestURL).
@@ -37,6 +39,9 @@ func TestBuilder(t *testing.T) {
 			builderTestNamespacesURL,
 			builderTestPagesDataURL,
 			builderTestUserURL,
+		}).
+		Headers(map[string]string{
+			builderTestHeaderName: builderTestHeaderValue,
 		})
 
 	client := builder.Build()
@@ -52,4 +57,5 @@ func TestBuilder(t *testing.T) {
 	assert.Equal(t, builderTestPagesDataURL, client.options.PageDataURL)
 	assert.Equal(t, builderTestUserURL, client.options.UserURL)
 	assert.Equal(t, builderTestTimeout, client.httpClient.Timeout)
+	assert.Equal(t, builderTestHeaderValue, client.headers[builderTestHeaderName])
 }

@@ -45,13 +45,14 @@ func NewClient(url string) *Client {
 type Client struct {
 	url        string
 	httpClient *http.Client
+	headers    map[string]string
 	options    *Options
 }
 
 // PageMeta get page meta data.
 func (cl *Client) PageMeta(ctx context.Context, title string) (*PageMeta, error) {
 	meta := new(PageMeta)
-	data, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+cl.options.PageMetaURL+url.QueryEscape(title), nil)
+	data, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+cl.options.PageMetaURL+url.QueryEscape(title), nil, cl.headers)
 
 	if err != nil {
 		return meta, err
@@ -113,7 +114,7 @@ func (cl *Client) PagesData(ctx context.Context, titles []string, options ...Pag
 		strings.NewReader(body.Encode()),
 		map[string]string{
 			"Content-Type": "application/x-www-form-urlencoded",
-		})
+		}, cl.headers)
 
 	if err != nil {
 		return pages, err
@@ -177,7 +178,7 @@ func (cl *Client) PageHTML(ctx context.Context, title string, rev ...int) ([]byt
 		url += "/" + strconv.Itoa(rev[0])
 	}
 
-	data, status, err := req(ctx, cl.httpClient, http.MethodGet, url, nil)
+	data, status, err := req(ctx, cl.httpClient, http.MethodGet, url, nil, cl.headers)
 
 	if err != nil {
 		return []byte{}, err
@@ -198,7 +199,7 @@ func (cl *Client) PageWikitext(ctx context.Context, title string, rev ...int) ([
 		url += "&rvstartid=" + strconv.Itoa(rev[0])
 	}
 
-	data, status, err := req(ctx, cl.httpClient, http.MethodGet, url, nil)
+	data, status, err := req(ctx, cl.httpClient, http.MethodGet, url, nil, cl.headers)
 
 	if err != nil {
 		return []byte{}, err
@@ -248,7 +249,7 @@ func (cl *Client) PageRevisions(ctx context.Context, title string, limit int, op
 	}
 
 	reqURL := cl.url + cl.options.PageRevisionsURL + body.Encode()
-	data, status, err := req(ctx, cl.httpClient, http.MethodGet, reqURL, nil)
+	data, status, err := req(ctx, cl.httpClient, http.MethodGet, reqURL, nil, cl.headers)
 
 	if err != nil {
 		return revs, err
@@ -275,7 +276,7 @@ func (cl *Client) PageRevisions(ctx context.Context, title string, limit int, op
 // Sitematrix get all supported wikimedia projects.
 func (cl *Client) Sitematrix(ctx context.Context) (*Sitematrix, error) {
 	matrix := new(Sitematrix)
-	data, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+cl.options.SitematrixURL, nil)
+	data, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+cl.options.SitematrixURL, nil, cl.headers)
 
 	if err != nil {
 		return matrix, err
@@ -308,7 +309,7 @@ func (cl *Client) Sitematrix(ctx context.Context) (*Sitematrix, error) {
 // Namespaces get page types called "namespaces".
 func (cl *Client) Namespaces(ctx context.Context) ([]Namespace, error) {
 	ns := []Namespace{}
-	data, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+cl.options.NamespacesURL, nil)
+	data, status, err := req(ctx, cl.httpClient, http.MethodGet, cl.url+cl.options.NamespacesURL, nil, cl.headers)
 
 	if err != nil {
 		return ns, err
@@ -357,7 +358,7 @@ func (cl *Client) Users(ctx context.Context, ids ...int) (map[int]User, error) {
 		strings.NewReader(body.Encode()),
 		map[string]string{
 			"Content-Type": "application/x-www-form-urlencoded",
-		})
+		}, cl.headers)
 
 	if err != nil {
 		return nil, err

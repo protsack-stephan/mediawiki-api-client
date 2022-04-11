@@ -9,10 +9,15 @@ import (
 )
 
 func main() {
-	client := mediawiki.NewClient("https://en.wikipedia.org/")
+	client := mediawiki.
+		NewBuilder("https://en.wikipedia.org").
+		Headers(map[string]string{
+			"User-Agent": "test@gmail.com",
+		}).
+		Build()
 	ctx := context.Background()
 
-	meta, err := client.PageMeta(ctx, "Pet_door")
+	meta, err := client.PageMeta(ctx, "Barack_Obama")
 
 	if err != nil {
 		log.Panic(err)
@@ -20,7 +25,7 @@ func main() {
 
 	fmt.Println(meta)
 
-	data, err := client.PageHTML(ctx, "Pet_door", meta.Rev)
+	data, err := client.PageHTML(ctx, "Barack_Obama", meta.Rev)
 
 	if err != nil {
 		log.Panic(err)
@@ -28,7 +33,7 @@ func main() {
 
 	fmt.Println(string(data))
 
-	revisions, err := client.PageRevisions(ctx, "Pet_door", 10,
+	revisions, err := client.PageRevisions(ctx, "Barack_Obama", 10,
 		mediawiki.PageRevisionsOptions{
 			Order: mediawiki.RevisionOrderingOlder,
 			Props: []string{"content", "ids", "timestamp"},
@@ -67,7 +72,7 @@ func main() {
 		fmt.Println(ns)
 	}
 
-	wikitext, err := client.PageWikitext(ctx, "Main")
+	wikitext, err := client.PageWikitext(ctx, "Barack_Obama")
 
 	if err != nil {
 		log.Panic(err)
