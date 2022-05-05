@@ -81,7 +81,7 @@ const pageDataTestBdy = `{
 							"categories": [
 								{
 									"ns": %d,
-									"title": "%s"
+									"title": "%s",
 									"hidden": false
 								}
 							],
