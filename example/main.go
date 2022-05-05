@@ -114,4 +114,21 @@ func main() {
 	}
 
 	fmt.Println(user)
+
+	// An example of working with page category
+	opt := mediawiki.PageDataOptions{
+		CategoriesLimit: 1,
+		CategoriesProps: []string{"hidden"},
+	}
+	pdata, err = client.PageData(ctx, "Rideau_River", opt)
+
+	if err != nil {
+		log.Panic(err)
+	}
+	if len(pdata.Categories) != 1 {
+		fmt.Println("Error: PageData response should have only one category.")
+	}
+	fmt.Println("Category namespace : ", pdata.Categories[0].Ns)
+	fmt.Println("Category title : ", pdata.Categories[0].Title)
+	fmt.Println("Category prop hidden : ", pdata.Categories[0].Hidden)
 }
