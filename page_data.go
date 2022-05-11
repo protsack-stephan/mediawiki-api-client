@@ -4,9 +4,13 @@ import "time"
 
 const pageDataURL = "/w/api.php"
 
+// PageDataOptions representation of optional arguments to PagesData API.
+// For details on page category props, refer to https://www.mediawiki.org/wiki/API:Categories#API_documentation
 type PageDataOptions struct {
-	RevisionsLimit int
-	RevisionProps  []string
+	RevisionsLimit  int
+	RevisionProps   []string
+	CategoriesLimit int
+	CategoriesProps []string
 }
 
 // PageDataOresScore representation for ORES score
@@ -62,8 +66,9 @@ type PageDataProtection struct {
 
 // PageDataCategory representation for page data category
 type PageDataCategory struct {
-	Ns    int    `json:"ns"`
-	Title string `json:"title"`
+	Ns     int    `json:"ns"`
+	Title  string `json:"title"`
+	Hidden bool   `json:"hidden"`
 }
 
 // PageDataTemplate representation for page data template

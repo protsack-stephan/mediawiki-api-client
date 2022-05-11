@@ -81,7 +81,8 @@ const pageDataTestBdy = `{
 							"categories": [
 								{
 									"ns": %d,
-									"title": "%s"
+									"title": "%s",
+									"hidden": false
 								}
 							],
 							"revisions": [
@@ -192,6 +193,7 @@ func assertPage(assert *assert.Assertions, page PageData) {
 	assert.Contains(page.WbEntityUsage[pageDataTestWbEntityUsageQID].Aspects, pageDataTestWbEntityUsageAspect)
 	assert.Equal(pageDataTestCategoriesTitle, page.Categories[0].Title)
 	assert.Equal(pageDataTestCategoriesNs, page.Categories[0].Ns)
+	assert.Equal(false, page.Categories[0].Hidden)
 	assert.Equal(pageDataStableRev, page.Flagged.StableRevID)
 }
 

@@ -80,12 +80,23 @@ func (cl *Client) PageMeta(ctx context.Context, title string) (*PageMeta, error)
 func (cl *Client) PagesData(ctx context.Context, titles []string, options ...PageDataOptions) (map[string]PageData, error) {
 	var rvProps []string
 	rvLimit := 1
+	clLimit := 500
+	clProps := []string{"hidden"}
+
 	pages := make(map[string]PageData)
 	res := new(pageDataResponse)
 
 	for _, opt := range options {
 		rvLimit = opt.RevisionsLimit
 		rvProps = opt.RevisionProps
+
+		if opt.CategoriesLimit > 0 && opt.CategoriesLimit < 500 {
+			clLimit = opt.CategoriesLimit
+		}
+
+		if len(opt.CategoriesProps) > 0 {
+			clProps = opt.CategoriesProps
+		}
 	}
 
 	body := url.Values{
@@ -100,6 +111,8 @@ func (cl *Client) PagesData(ctx context.Context, titles []string, options ...Pag
 		"formatversion": []string{"2"},
 		"format":        []string{"json"},
 		"rvlimit":       []string{fmt.Sprintf("%d", rvLimit)},
+		"cllimit":       []string{fmt.Sprintf("%d", clLimit)},
+		"clprop":        []string{strings.Join(clProps, "|")},
 	}
 
 	if len(rvProps) > 0 {
