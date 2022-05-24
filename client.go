@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -81,6 +82,7 @@ func (cl *Client) PagesData(ctx context.Context, titles []string, options ...Pag
 	var rvProps []string
 	rvLimit := 1
 	clLimit := 500
+	tlLimit := 500
 	clProps := []string{"hidden"}
 
 	pages := make(map[string]PageData)
@@ -90,8 +92,12 @@ func (cl *Client) PagesData(ctx context.Context, titles []string, options ...Pag
 		rvLimit = opt.RevisionsLimit
 		rvProps = opt.RevisionProps
 
-		if opt.CategoriesLimit > 0 && opt.CategoriesLimit < 500 {
+		if opt.CategoriesLimit > 0 && opt.CategoriesLimit <= 500 {
 			clLimit = opt.CategoriesLimit
+		}
+
+		if opt.TemplatesLimit > 0 && opt.TemplatesLimit <= 500 {
+			tlLimit = opt.TemplatesLimit
 		}
 
 		if len(opt.CategoriesProps) > 0 {
@@ -112,6 +118,7 @@ func (cl *Client) PagesData(ctx context.Context, titles []string, options ...Pag
 		"format":        []string{"json"},
 		"cllimit":       []string{fmt.Sprintf("%d", clLimit)},
 		"clprop":        []string{strings.Join(clProps, "|")},
+		"tllimit":       []string{fmt.Sprintf("%d", tlLimit)},
 	}
 
 	if rvLimit > 1 {
@@ -131,6 +138,8 @@ func (cl *Client) PagesData(ctx context.Context, titles []string, options ...Pag
 		map[string]string{
 			"Content-Type": "application/x-www-form-urlencoded",
 		}, cl.headers)
+
+	log.Println(string(data))
 
 	if err != nil {
 		return pages, err

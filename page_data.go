@@ -11,6 +11,7 @@ type PageDataOptions struct {
 	RevisionProps   []string
 	CategoriesLimit int
 	CategoriesProps []string
+	TemplatesLimit  int
 }
 
 // PageDataOresScore representation for ORES score
