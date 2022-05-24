@@ -12,6 +12,8 @@ type PageDataOptions struct {
 	CategoriesLimit int
 	CategoriesProps []string
 	TemplatesLimit  int
+	RedirectsLimit  int
+	WebEntityLimits int
 }
 
 // PageDataOresScore representation for ORES score
@@ -133,7 +135,8 @@ type PageData struct {
 }
 
 type pageDataResponse struct {
-	Batchcomplete bool `json:"batchcomplete"`
+	Batchcomplete bool                   `json:"batchcomplete"`
+	Continue      map[string]interface{} `json:"continue"`
 	Query         struct {
 		Normalized []struct {
 			Fromencoded bool   `json:"fromencoded"`

@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -83,6 +82,8 @@ func (cl *Client) PagesData(ctx context.Context, titles []string, options ...Pag
 	rvLimit := 1
 	clLimit := 500
 	tlLimit := 500
+	rdLimit := 500
+	wbeuLimit := 500
 	clProps := []string{"hidden"}
 
 	pages := make(map[string]PageData)
@@ -98,6 +99,14 @@ func (cl *Client) PagesData(ctx context.Context, titles []string, options ...Pag
 
 		if opt.TemplatesLimit > 0 && opt.TemplatesLimit <= 500 {
 			tlLimit = opt.TemplatesLimit
+		}
+
+		if opt.RedirectsLimit > 0 && opt.RedirectsLimit <= 500 {
+			rdLimit = opt.RedirectsLimit
+		}
+
+		if opt.WebEntityLimits > 0 && opt.WebEntityLimits <= 500 {
+			wbeuLimit = opt.WebEntityLimits
 		}
 
 		if len(opt.CategoriesProps) > 0 {
@@ -116,9 +125,11 @@ func (cl *Client) PagesData(ctx context.Context, titles []string, options ...Pag
 		"titles":        []string{strings.Join(titles, "|")},
 		"formatversion": []string{"2"},
 		"format":        []string{"json"},
-		"cllimit":       []string{fmt.Sprintf("%d", clLimit)},
 		"clprop":        []string{strings.Join(clProps, "|")},
+		"cllimit":       []string{fmt.Sprintf("%d", clLimit)},
 		"tllimit":       []string{fmt.Sprintf("%d", tlLimit)},
+		"rdlimit":       []string{fmt.Sprintf("%d", rdLimit)},
+		"wbeulimit":     []string{fmt.Sprintf("%d", wbeuLimit)},
 	}
 
 	if rvLimit > 1 {
@@ -138,8 +149,6 @@ func (cl *Client) PagesData(ctx context.Context, titles []string, options ...Pag
 		map[string]string{
 			"Content-Type": "application/x-www-form-urlencoded",
 		}, cl.headers)
-
-	log.Println(string(data))
 
 	if err != nil {
 		return pages, err
