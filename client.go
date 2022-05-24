@@ -110,9 +110,12 @@ func (cl *Client) PagesData(ctx context.Context, titles []string, options ...Pag
 		"titles":        []string{strings.Join(titles, "|")},
 		"formatversion": []string{"2"},
 		"format":        []string{"json"},
-		"rvlimit":       []string{fmt.Sprintf("%d", rvLimit)},
 		"cllimit":       []string{fmt.Sprintf("%d", clLimit)},
 		"clprop":        []string{strings.Join(clProps, "|")},
+	}
+
+	if rvLimit > 1 {
+		body["rvlimit"] = []string{fmt.Sprintf("%d", rvLimit)}
 	}
 
 	if len(rvProps) > 0 {
