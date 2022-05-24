@@ -81,6 +81,9 @@ func (cl *Client) PagesData(ctx context.Context, titles []string, options ...Pag
 	var rvProps []string
 	rvLimit := 1
 	clLimit := 500
+	tlLimit := 500
+	rdLimit := 500
+	wbeuLimit := 500
 	clProps := []string{"hidden"}
 
 	pages := make(map[string]PageData)
@@ -90,8 +93,20 @@ func (cl *Client) PagesData(ctx context.Context, titles []string, options ...Pag
 		rvLimit = opt.RevisionsLimit
 		rvProps = opt.RevisionProps
 
-		if opt.CategoriesLimit > 0 && opt.CategoriesLimit < 500 {
+		if opt.CategoriesLimit > 0 && opt.CategoriesLimit <= 500 {
 			clLimit = opt.CategoriesLimit
+		}
+
+		if opt.TemplatesLimit > 0 && opt.TemplatesLimit <= 500 {
+			tlLimit = opt.TemplatesLimit
+		}
+
+		if opt.RedirectsLimit > 0 && opt.RedirectsLimit <= 500 {
+			rdLimit = opt.RedirectsLimit
+		}
+
+		if opt.WebEntityLimits > 0 && opt.WebEntityLimits <= 500 {
+			wbeuLimit = opt.WebEntityLimits
 		}
 
 		if len(opt.CategoriesProps) > 0 {
@@ -110,9 +125,15 @@ func (cl *Client) PagesData(ctx context.Context, titles []string, options ...Pag
 		"titles":        []string{strings.Join(titles, "|")},
 		"formatversion": []string{"2"},
 		"format":        []string{"json"},
-		"rvlimit":       []string{fmt.Sprintf("%d", rvLimit)},
-		"cllimit":       []string{fmt.Sprintf("%d", clLimit)},
 		"clprop":        []string{strings.Join(clProps, "|")},
+		"cllimit":       []string{fmt.Sprintf("%d", clLimit)},
+		"tllimit":       []string{fmt.Sprintf("%d", tlLimit)},
+		"rdlimit":       []string{fmt.Sprintf("%d", rdLimit)},
+		"wbeulimit":     []string{fmt.Sprintf("%d", wbeuLimit)},
+	}
+
+	if rvLimit > 1 {
+		body["rvlimit"] = []string{fmt.Sprintf("%d", rvLimit)}
 	}
 
 	if len(rvProps) > 0 {
